@@ -1,8 +1,12 @@
 import * as admin from 'firebase-admin';
 
 interface PendingWrite {
-  (transaction: admin.firestore.Transaction): void;
+  (transaction: admin.firestore.Transaction): Promise<void>;
 }
+
+// Define named constants for magic numbers
+const BUCKET_SIZE_DIVISOR = 3;
+const RANGE_COUNT_INCREMENT = 1;
 
 /**
  * Calculates the bucket range for a given score.
@@ -11,28 +15,45 @@ interface PendingWrite {
  * @param {number} max The max of the previous range. Must be greater than min.
  * @return {Object<string, number>} Returns an object containing the new min and max.
  */
-function bucket(value: number, min: number, max: number): { min: number; max: number } {
+function calculateBucketRange(value: number, min: number, max: number): { min: number; max: number } {
   if (max <= min) {
-    throw new Error('max must be greater than min');
+    throw new RangeError('Max must be greater than min');
   }
-  const bucketSize = (max - min) / 3;
+  const bucketSize = Math.floor((max - min) / BUCKET_SIZE_DIVISOR);
   if (bucketSize === 0) {
-    throw new Error('bucketSize cannot be zero');
+    throw new RangeError('Bucket size cannot be zero');
   }
-  const bucketMin = Math.floor(value / bucketSize) * bucketSize;
-  const bucketMax = bucketMin + bucketSize;
-  return { min: bucketMin, max: bucketMax };
+  const newMin = Math.min(min, value - bucketSize);
+  const newMax = Math.max(max, value + bucketSize);
+  return { min: newMin, max: newMax };
 }
 
 /**
- * Recursively writes the score to the correct collection.
+ * Creates a new document with exact data.
+ * @param {admin.firestore.CollectionReference} coll The collection to write to.
+ * @param {number} id The user associated with the score.
+ * @param {number} value The new score.
+ * @param {Object<string, number>} range An object with properties min and max defining the range this score should be in.
+ * @return {Promise<admin.firestore.DocumentReference>} The created document reference.
+ */
+async function createExactDocument(coll: admin.firestore.CollectionReference, id: number, value: number, range: { min: number; max: number }): Promise<admin.firestore.DocumentReference> {
+  try {
+    const exactData = { id, value, range };
+    return coll.add(exactData);
+  } catch (error) {
+    throw new Error(`Failed to create exact document: ${error.message}`);
+  }
+}
+
+/**
+ * Writes a score to the correct collection.
  * @param {number} id The user associated with the score.
  * @param {number} value The new score.
  * @param {admin.firestore.CollectionReference} coll The collection this value should be written to.
  * @param {Object<string, number>} range An object with properties min and max defining the range this score should be in.
  * @param {admin.firestore.Transaction} transaction The transaction used to ensure consistency during tree updates.
  * @param {Array<PendingWrite>} pendingWrites A series of writes that should occur once all reads within a transaction have completed.
- * @return {void} Write error/success is handled via the transaction object.
+ * @return {Promise<void>} Write error/success is handled via the transaction object.
  */
 async function writeScoreToCollection(
   id: number,
@@ -43,76 +64,20 @@ async function writeScoreToCollection(
   pendingWrites: Array<PendingWrite>
 ): Promise<void> {
   try {
-    const snapshot = await transaction.get(coll);
-    if (snapshot.empty) {
-      // This is the first score to be inserted into this node.
-      for (const write of pendingWrites) {
-        write(transaction);
-      }
-      const docRef = coll.doc();
-      transaction.create(docRef, { exact: { score: value, user: id } });
-      return;
-    }
-
-    const min = range.min;
-    const max = range.max;
-
-    for (const node of snapshot.docs) {
-      const data = node.data();
-      if (data.exact !== undefined) {
-        // This node held an exact score.
-        const newRange = bucket(value, min, max);
-        const tempRange = bucket(data.exact.score, min, max);
-
-        if (newRange.min === tempRange.min && newRange.max === tempRange.max) {
-          // The scores belong in the same range, so we need to "demote" both to a lower level of the tree and convert this node to a range.
-          const rangeData = {
-            range: newRange,
-            count: 2,
-          };
-          for (const write of pendingWrites) {
-            write(transaction);
-          }
-          const docReference = node.ref;
-          transaction.set(docReference, rangeData);
-          transaction.create(docReference.collection("scores").doc(), data);
-          transaction.create(
-            docReference.collection("scores").doc(),
-            { exact: { score: value, user: id } },
-          );
-          return;
-        } else {
-          // The scores are in different ranges. Continue and try to find a range that fits this score.
-          continue;
-        }
-      }
-
-      if (data.range.min <= value && data.range.max > value) {
-        // The score belongs to this range that may have subvalues.
-        // Increment the range's count in pendingWrites, since subsequent recursion may incur more reads.
-        const docReference = node.ref;
-        const newCount = node.get("count") + 1;
-        pendingWrites.push((t) => {
-          t.update(docReference, { count: newCount });
-        });
-        const newRange = bucket(value, min, max);
-        return writeScoreToCollection(
-          id,
-          value,
-          docReference.collection("scores"),
-          newRange,
-          transaction,
-          pendingWrites,
-        );
-      }
-    }
-
-    // No appropriate range was found, create an `exact` value.
-    transaction.create(coll.doc(), { exact: { score: value, user: id } });
+    const newRange = calculateBucketRange(value, range.min, range.max);
+    const exactDocRef = await createExactDocument(coll, id, value, newRange);
+    pendingWrites.push((transaction) => transaction.set(exactDocRef, { count: RANGE_COUNT_INCREMENT }));
   } catch (error) {
-    console.error('Error writing score to collection:', error);
-    throw error;
+    handleError(error, transaction);
   }
 }
 
-export default
+/**
+ * Handles errors during score writing.
+ * @param {Error} error The error that occurred.
+ * @param {admin.firestore.Transaction} transaction The transaction to roll back.
+ */
+function handleError(error: Error, transaction: admin.firestore.Transaction): void {
+  console.error('Error writing score to collection:', error);
+  transaction.rollback();
+}
