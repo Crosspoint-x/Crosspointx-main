@@ -1,3 +1,9 @@
+import * as admin from 'firebase-admin';
+
+interface PendingWrite {
+  (transaction: admin.firestore.Transaction): void;
+}
+
 /**
  * Calculates the bucket range for a given score.
  * @param {number} value The new score.
@@ -5,16 +11,20 @@
  * @param {number} max The max of the previous range. Must be greater than min.
  * @return {Object<string, number>} Returns an object containing the new min and max.
  */
-function bucket(value, min, max) {
-    const bucketSize = (max - min) / 3;
-    const bucketMin = Math.floor(value / bucketSize) * bucketSize;
-    const bucketMax = bucketMin + bucketSize;
-    return { min: bucketMin, max: bucketMax };
+function bucket(value: number, min: number, max: number): { min: number; max: number } {
+  if (max <= min) {
+    throw new Error('max must be greater than min');
   }
-  
-  export default bucket;
+  const bucketSize = (max - min) / 3;
+  if (bucketSize === 0) {
+    throw new Error('bucketSize cannot be zero');
+  }
+  const bucketMin = Math.floor(value / bucketSize) * bucketSize;
+  const bucketMax = bucketMin + bucketSize;
+  return { min: bucketMin, max: bucketMax };
+}
 
- /**
+/**
  * Recursively writes the score to the correct collection.
  * @param {number} id The user associated with the score.
  * @param {number} value The new score.
@@ -24,7 +34,15 @@ function bucket(value, min, max) {
  * @param {Array<PendingWrite>} pendingWrites A series of writes that should occur once all reads within a transaction have completed.
  * @return {void} Write error/success is handled via the transaction object.
  */
-async function writeScoreToCollection(id, value, coll, range, transaction, pendingWrites) {
+async function writeScoreToCollection(
+  id: number,
+  value: number,
+  coll: admin.firestore.CollectionReference,
+  range: { min: number; max: number },
+  transaction: admin.firestore.Transaction,
+  pendingWrites: Array<PendingWrite>
+): Promise<void> {
+  try {
     const snapshot = await transaction.get(coll);
     if (snapshot.empty) {
       // This is the first score to be inserted into this node.
@@ -35,17 +53,17 @@ async function writeScoreToCollection(id, value, coll, range, transaction, pendi
       transaction.create(docRef, { exact: { score: value, user: id } });
       return;
     }
-  
+
     const min = range.min;
     const max = range.max;
-  
+
     for (const node of snapshot.docs) {
       const data = node.data();
       if (data.exact !== undefined) {
         // This node held an exact score.
         const newRange = bucket(value, min, max);
         const tempRange = bucket(data.exact.score, min, max);
-  
+
         if (newRange.min === tempRange.min && newRange.max === tempRange.max) {
           // The scores belong in the same range, so we need to "demote" both to a lower level of the tree and convert this node to a range.
           const rangeData = {
@@ -68,7 +86,7 @@ async function writeScoreToCollection(id, value, coll, range, transaction, pendi
           continue;
         }
       }
-  
+
       if (data.range.min <= value && data.range.max > value) {
         // The score belongs to this range that may have subvalues.
         // Increment the range's count in pendingWrites, since subsequent recursion may incur more reads.
@@ -88,29 +106,13 @@ async function writeScoreToCollection(id, value, coll, range, transaction, pendi
         );
       }
     }
-  
+
     // No appropriate range was found, create an `exact` value.
     transaction.create(coll.doc(), { exact: { score: value, user: id } });
+  } catch (error) {
+    console.error('Error writing score to collection:', error);
+    throw error;
   }
-  
-  export default writeScoreToCollection; 
+}
 
-  /**
- * Updates the count of players in a range.
- * @param {admin.firestore.DocumentReference} docReference The document reference to update.
- * @param {number} newCount The new count of players in the range.
- * @return {Function} A function that updates the count when called with a transaction.
- */
-function updateCount(docReference, newCount) {
-    return (t) => {
-      t.update(docReference, { count: newCount });
-    };
-  }
-  
-  export default updateCount;
-
-  /**
- * Creates a new score in the leaderboard.
- * @param {number} playerID The ID of the player.
- * @param {number} score The new score.
- * @param {admin.firestore
+export default
