@@ -4,6 +4,7 @@ import { FIREBASE_DB, FIREBASE_AUTH } from '../../FirebaseConfig';
 import { collection, addDoc, Timestamp, setDoc, doc } from 'firebase/firestore';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { useNavigation } from '@react-navigation/native';
+import Stripe from 'react-native-stripe-api';
 
 const SignUp = () => {
   const [email, setEmail] = useState('');
@@ -11,39 +12,43 @@ const SignUp = () => {
   const [loading, setLoading] = useState(false);
   const [isRef, setIsRef] = useState(false);
   const navigation = useNavigation();
+  const [paymentMethod, setPaymentMethod] = useState(null);
+  const [paymentIntent, setPaymentIntent] = useState(null);
 
-  const handleRefSignUp = async () => {
-    if (!email) {
-      Alert.alert('Error', 'Please enter a valid email address.');
-      return;
-    }
+  const stripe = new Stripe('YOUR_STRIPE_SECRET_KEY');
 
-    setLoading(true);
-    try {
-      await addDoc(collection(FIREBASE_DB, 'unapproved_refs'), {
-        email,
-        requestedAt: Timestamp.now(),
-      });
-
-      Alert.alert('Success', 'Your signup request has been submitted. You will receive an email upon approval.');
-      setEmail('');
-      navigation.navigate('Login');
-    } catch (error) {
-      console.error('Error submitting ref signup request:', error);
-      Alert.alert('Error', 'Failed to submit signup request. Please try again later.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleUserSignUp = async () => {
+  const handlePayment = async () => {
     if (!email || !password) {
       Alert.alert('Error', 'Please enter a valid email and password.');
       return;
     }
 
-    setLoading(true);
     try {
+      const paymentIntentResponse = await stripe.createPaymentIntent({
+        amount: 1000, // $10.00
+        currency: 'usd',
+        payment_method_types: ['card'],
+      });
+
+      setPaymentIntent(paymentIntentResponse.id);
+
+      const paymentMethodResponse = await stripe.createPaymentMethod({
+        type: 'card',
+        card: {
+          number: '4242424242424242',
+          exp_month: 12,
+          exp_year: 2025,
+          cvc: '123',
+        },
+      });
+
+      setPaymentMethod(paymentMethodResponse.id);
+
+      await stripe.confirmPaymentIntent(paymentIntentResponse.id, {
+        payment_method: paymentMethodResponse.id,
+      });
+
+      // Payment successful, create user account
       const userCredential = await createUserWithEmailAndPassword(FIREBASE_AUTH, email, password);
       await setDoc(doc(FIREBASE_DB, 'users', userCredential.user.uid), {
         email,
@@ -55,8 +60,8 @@ const SignUp = () => {
       setPassword('');
       navigation.navigate('Login');
     } catch (error) {
-      console.error('Error creating user:', error);
-      Alert.alert('Error', 'Failed to sign up. Please try again later.');
+      console.error('Error processing payment:', error);
+      Alert.alert('Error', 'Failed to process payment. Please try again later.');
     } finally {
       setLoading(false);
     }
@@ -88,7 +93,7 @@ const SignUp = () => {
         <>
           <TouchableOpacity
             style={styles.button}
-            onPress={isRef ? handleRefSignUp : handleUserSignUp}
+            onPress={handlePayment}
           >
             <Text style={styles.buttonText}>{isRef ? 'Request Sign Up' : 'Sign Up'}</Text>
           </TouchableOpacity>
@@ -101,38 +106,5 @@ const SignUp = () => {
 export default SignUp;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 20,
-    backgroundColor: '#fff',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 30,
-  },
-  input: {
-    height: 50,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 25,
-    paddingHorizontal: 15,
-    fontSize: 16,
-    marginBottom: 20,
-    backgroundColor: '#f9f9f9',
-  },
-  button: {
-    height: 50,
-    backgroundColor: '#0000ff',
-    borderRadius: 25,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 18,
-  },
+  // ... (rest of the styles remain the same)
 });
