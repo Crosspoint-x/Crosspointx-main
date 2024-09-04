@@ -81,3 +81,12 @@ function handleError(error: Error, transaction: admin.firestore.Transaction): vo
   console.error('Error writing score to collection:', error);
   transaction.rollback();
 }
+
+// Example usage:
+// You can use JSX syntax here
+const App = () => {
+  // Use the functions here
+  return <div>Hello World!</div>;
+};
+
+export default App;

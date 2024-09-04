@@ -4,7 +4,7 @@ import { FIREBASE_DB, FIREBASE_AUTH } from '../../FirebaseConfig';
 import { collection, addDoc, Timestamp, setDoc, doc } from 'firebase/firestore';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { useNavigation } from '@react-navigation/native';
-import Stripe from 'react-native-stripe-api';
+import { useStripe } from '@stripe/stripe-react-native';                      
 
 const SignUp = () => {
   const [email, setEmail] = useState('');
@@ -14,8 +14,7 @@ const SignUp = () => {
   const navigation = useNavigation();
   const [paymentMethod, setPaymentMethod] = useState(null);
   const [paymentIntent, setPaymentIntent] = useState(null);
-
-  const stripe = new Stripe('YOUR_STRIPE_SECRET_KEY');
+  const { initPaymentSheet, presentPaymentSheet } = useStripe();
 
   const handlePayment = async () => {
     if (!email || !password) {
@@ -24,29 +23,22 @@ const SignUp = () => {
     }
 
     try {
-      const paymentIntentResponse = await stripe.createPaymentIntent({
-        amount: 1000, // $10.00
-        currency: 'usd',
-        payment_method_types: ['card'],
-      });
-
-      setPaymentIntent(paymentIntentResponse.id);
-
-      const paymentMethodResponse = await stripe.createPaymentMethod({
-        type: 'card',
-        card: {
-          number: '4242424242424242',
-          exp_month: 12,
-          exp_year: 2025,
-          cvc: '123',
+      const paymentIntentResponse = await initPaymentSheet({
+        paymentIntentClientSecret: 'YOUR_PAYMENT_INTENT_CLIENT_SECRET',
+        applePay: {
+          merchantCountryCode: 'US',
         },
+        googlePay: {
+          testEnv: true,
+          currencyCode: 'usd',
+          countryCode: 'US',
+        },
+        style: 'alwaysDark',
+        merchantDisplayName: 'YOUR_MERCHANT_DISPLAY_NAME',
+        customerEphemeralKeySecret: 'YOUR_CUSTOMER_EPHEMERAL_KEY_SECRET',
       });
 
-      setPaymentMethod(paymentMethodResponse.id);
-
-      await stripe.confirmPaymentIntent(paymentIntentResponse.id, {
-        payment_method: paymentMethodResponse.id,
-      });
+      await presentPaymentSheet();
 
       // Payment successful, create user account
       const userCredential = await createUserWithEmailAndPassword(FIREBASE_AUTH, email, password);
@@ -106,5 +98,38 @@ const SignUp = () => {
 export default SignUp;
 
 const styles = StyleSheet.create({
-  // ... (rest of the styles remain the same)
+  container: {
+      flex: 1,
+      justifyContent: 'center',
+      paddingHorizontal: 20,
+      backgroundColor: '#fff',
+  },
+  title: {
+      fontSize: 24,
+      fontWeight: 'bold',
+      textAlign: 'center',
+      marginBottom: 30,
+  },
+  input: {
+      height: 50,
+      borderColor: '#ccc',
+      borderWidth: 1,
+      borderRadius: 25,
+      paddingHorizontal: 15,
+      fontSize: 16,
+      marginBottom: 20,
+      backgroundColor: '#f9f9f9',
+  },
+  button: {
+      height: 50,
+      backgroundColor: '#0000ff',
+      borderRadius: 25,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: 10,
+  },
+  buttonText: {
+      color: '#fff',
+      fontSize: 18,
+  },
 });

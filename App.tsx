@@ -8,7 +8,7 @@ import List from "./app/screens/List";
 import SignUp from "./app/screens/SignUp";  
 import RefSignUp from "./app/screens/RefSignUp"; 
 import { FIREBASE_AUTH } from "./FirebaseConfig";
-import { StyleSheet, Button } from "react-native";
+import { StyleSheet, Button } from "react-native";      
 
 const Stack = createNativeStackNavigator();
 
