@@ -2,6 +2,27 @@
   text-align: center;
 }
 
+.container {
+    display: flex;
+    font-family: "Aldrich";
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #FFFFFF;
+    height: 100vh;
+    padding: 20px;
+}
+
+.aldrich-regular {
+  font-family: "Aldrich", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.font-link {
+  font-family: 'Aldrich';
+}
+
 .App-logo {
   height: 40vmin;
   pointer-events: none;
@@ -35,4 +56,62 @@
   to {
     transform: rotate(360deg);
   }
+}
+  
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #f0f0f0;
+}
+
+.header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+  background-color: #0000ff;
+  color: #fff;
+}
+
+.mainContent {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.footer {
+  padding: 10px;
+  text-align: center;
+  background-color: #e0e0e0;
+}
+
+/* App.css or InsideLayout.css */
+
+/* Style for the header containing Back and Logout buttons */
+.header {
+  position: fixed;
+  top: 0;
+  right: 0;
+  display: flex;
+  justify-content: flex-end;
+  padding: 10px;
+  z-index: 1000; /* Ensure buttons are above other content */
+}
+
+/* Style for Back button */
+.back-button {
+  margin-right: 10px;
+}
+
+/* Style for Logout button */
+.logout-button {
+  margin-right: 10px;
+}
+
+/* Ensure the InsideLayout content is not hidden by fixed positioning */
+.InsideLayout {
+  padding-top: 60px; /* Adjust based on header height */
 }
