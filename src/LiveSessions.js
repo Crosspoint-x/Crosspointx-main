@@ -1,52 +1,83 @@
-import React, { useState, useEffect } from 'react';
-import { collection, onSnapshot, query, where } from 'firebase/firestore';
-import { FIREBASE_DB } from './firebase.js'; // Ensure this is your Firestore instance
+import React, { useEffect, useState } from "react";
+import { FIREBASE_DB2 } from "./firebase"; 
+import { ref, push, onValue, onDisconnect, set, remove } from "firebase/database";
+import './LiveSessions.css'; // Import the CSS for styling
 
-// Function to listen for live sessions
-function listenForLiveSessions(setActiveSessions) {
-  const sessionsRef = collection(FIREBASE_DB, 'sessions');
-  const liveSessionsQuery = query(sessionsRef, where('active', '==', true));
-
-  // Listen for real-time updates on active sessions
-  const unsubscribe = onSnapshot(liveSessionsQuery, (snapshot) => {
-    const activeSessions = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-    setActiveSessions(activeSessions); // Update state with active sessions
-  });
-
-  return unsubscribe; // Unsubscribe when no longer needed
-}
-
-function LiveSessions() {
-  const [activeSessions, setActiveSessions] = useState([]);
+export default function LiveSessions() {
+  const [activeUsers, setActiveUsers] = useState(0);
+  const [outdoorActive, setOutdoorActive] = useState(0);
+  const [indoorActive, setIndoorActive] = useState(0);
+  const [outdoorHits, setOutdoorHits] = useState(0);
+  const [indoorHits, setIndoorHits] = useState(0);
 
   useEffect(() => {
-    const unsubscribe = listenForLiveSessions(setActiveSessions);
+    // Reference to the active users
+    const activeUsersRef = ref(FIREBASE_DB2, 'activeUsers');
 
-    return () => unsubscribe(); // Clean up the listener when the component unmounts
+    // Add the user to the active users list when they come online
+    const userRef = push(activeUsersRef);
+    set(userRef, true); // Set the user as active before handling disconnection
+
+    // Remove the user when they disconnect
+    onDisconnect(userRef).remove(); 
+
+    // Listen for changes in the active users list
+    const unsubscribeActiveUsers = onValue(activeUsersRef, (snapshot) => {
+      setActiveUsers(snapshot.size); // Update the number of active users
+    });
+
+    // Listen for outdoor active players and hits
+    const outdoorActiveRef = ref(FIREBASE_DB2, 'games/outdoor/active');
+    const unsubscribeOutdoorActive = onValue(outdoorActiveRef, (snapshot) => {
+      setOutdoorActive(snapshot.val() || 0); // Set outdoor active players
+    });
+
+    const outdoorHitsRef = ref(FIREBASE_DB2, 'games/outdoor/hits');
+    const unsubscribeOutdoorHits = onValue(outdoorHitsRef, (snapshot) => {
+      setOutdoorHits(snapshot.val() || 0); // Set outdoor hits
+    });
+
+    // Listen for indoor active players and hits
+    const indoorActiveRef = ref(FIREBASE_DB2, 'games/indoor/active');
+    const unsubscribeIndoorActive = onValue(indoorActiveRef, (snapshot) => {
+      setIndoorActive(snapshot.val() || 0); // Set indoor active players
+    });
+
+    const indoorHitsRef = ref(FIREBASE_DB2, 'games/indoor/hits');
+    const unsubscribeIndoorHits = onValue(indoorHitsRef, (snapshot) => {
+      setIndoorHits(snapshot.val() || 0); // Set indoor hits
+    });
+
+    // Cleanup on component unmount
+    return () => {
+      remove(userRef); // Ensure user is removed when component unmounts
+      unsubscribeActiveUsers(); // Unsubscribe from active users
+      unsubscribeOutdoorActive(); // Unsubscribe from outdoor active
+      unsubscribeOutdoorHits(); // Unsubscribe from outdoor hits
+      unsubscribeIndoorActive(); // Unsubscribe from indoor active
+      unsubscribeIndoorHits(); // Unsubscribe from indoor hits
+    };
   }, []);
 
   return (
-    <div>
-      <h3>Live Sessions</h3>
-      {activeSessions.length > 0 ? (
-        <ul>
-          {activeSessions.map((session) => (
-            <li key={session.id}>
-              <strong>Session ID:</strong> {session.id} <br />
-              <strong>User ID:</strong> {session.userId} <br />
-              <strong>Start Time:</strong>{' '}
-              {session.startTime ? session.startTime.toDate().toLocaleString() : 'N/A'}
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p>No active sessions.</p>
-      )}
+    <div className="live-sessions-container">
+      <h1 className="live-sessions-title">Live Sessions</h1> {/* Moved here */}
+      <div className="games-info">
+        <img className="logo" src="/assets/OrlandoPB.png" alt="Orlando Paintball Logo" />
+        <div className="games-status">
+          <h2>Games:</h2>
+          <div className="game-details">
+            <div className="outdoor-status">
+              <span>Outdoor Active: {outdoorActive}</span>
+              <span>Hit: {outdoorHits}</span>
+            </div>
+            <div className="indoor-status">
+              <span>Indoor Active: {indoorActive}</span>
+              <span>Hit: {indoorHits}</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
-
-export default LiveSessions;

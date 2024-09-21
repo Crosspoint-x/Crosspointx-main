@@ -65,22 +65,13 @@
   background-color: #f0f0f0;
 }
 
-.header {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 10px;
-  background-color: #0000ff;
-  color: #fff;
-}
-
 .mainContent {
   flex: 1;
   display: flex;
   justify-content: center;
   align-items: center;
   padding: 20px;
-}
+} 
 
 .footer {
   padding: 10px;
@@ -91,19 +82,32 @@
 /* App.css or InsideLayout.css */
 
 /* Style for the header containing Back and Logout buttons */
-.header {
+.Back {
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: flex;
+  justify-content: left;
+  padding: 10px;
+  z-index: 1000; 
+}
+.Logout {
   position: fixed;
   top: 0;
   right: 0;
   display: flex;
-  justify-content: flex-end;
+  justify-content: left;
   padding: 10px;
-  z-index: 1000; /* Ensure buttons are above other content */
+  z-index: 1000;
+  color:darkred;
 }
 
 /* Style for Back button */
 .back-button {
   margin-right: 10px;
+  top: 0;
+  right: 0;
+  position: fixed;
 }
 
 /* Style for Logout button */

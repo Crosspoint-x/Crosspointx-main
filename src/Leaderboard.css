@@ -1,86 +1,28 @@
-* {
-  box-sizing: border-box;
+.leaderboard {
+  background-color: black;
+  color: white;
+  font-family: 'Press Start 2P', cursive;
 }
 
-body {
-  font-family: Arial, sans-serif;
-  background-color: #f4f4f9;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
+#leaderboard-table {
+  width: 100%;
+  border-collapse: collapse;
 }
 
-.container {
-  width: 90%;
-  max-width: 800px;
-  margin: 20px auto;
-  padding: 20px;
-  background: #fff;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
+#leaderboard-table th, #leaderboard-table td {
+  border: 1px solid white;
+  padding: 8px;
   text-align: center;
 }
 
-h1 {
-  color: #333;
-  margin-bottom: 20px;
+#leaderboard-table th {
+  background-color: #444;
 }
 
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 20px;
+#leaderboard-table tbody tr:nth-child(odd) {
+  background-color: #333;
 }
 
-.table th, .table td {
-  padding: 10px;
-  border-bottom: 1px solid #ddd;
-  text-align: left;
-}
-
-.table th {
-  background-color: #007bff;
-  color: white;
-}
-
-.table tr:hover {
-  background-color: #f1f1f1;
-}
-
-.button-container {
-  margin-top: 20px;
-}
-
-.button {
-  padding: 10px 20px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  text-decoration: none;
-}
-
-.button:hover {
-  background-color: #0056b3;
-}
-
-.button:focus {
-  outline: 2px solid #0056b3;
-  outline-offset: 2px;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .container {
-    width: 100%;
-    padding: 10px;
-  }
-
-  .table th, .table td {
-    padding: 8px;
-  }
+#leaderboard-table tbody tr:nth-child(even) {
+  background-color: #222;
 }
