@@ -1,139 +1,133 @@
-      import React, { useState } from 'react';
-      import { loadStripe } from '@stripe/stripe-js';
-      import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
-      import { createUserWithEmailAndPassword } from 'firebase/auth';
-      import { doc, setDoc } from 'firebase/firestore'; // Firestore functions
-      import { FIREBASE_AUTH, FIREBASE_DB } from './firebase'; // Firestore database
-      import './SignUp.css'; // Add some custom styling
+import React, { useState } from 'react';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { FIREBASE_AUTH, FIREBASE_APP, FIREBASE_STORE } from './firebase'; 
+import { loadStripe } from '@stripe/stripe-js'; 
+import { getStripePayments } from '@invertase/firestore-stripe-payments';
+import './SignUp.css';   
+import { collection, doc, addDoc, onSnapshot } from "firebase/firestore"; 
+import { useNavigate } from 'react-router-dom'; // Import to handle navigation
+import IconButton from "@mui/material/IconButton"; // Import for back button
+import ArrowBackIcon from "@mui/icons-material/ArrowBack"; // Import for back icon
 
-      const stripePromise = loadStripe('your-publishable-key'); // Replace with your actual public Stripe key
+const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLIC_KEY || 'pk_live_51Ow7goA466XWtdBifnrLrOBoMOu6VGECzCQMuMvB5faDbWBClqqQHRMoF1aXEPQVQiDX17j3gbtBtU2wmjdl7rPd002dR4kDFT');
 
-      const SignUp = () => {
-        const [email, setEmail] = useState('');
-        const [password, setPassword] = useState('');
-        const [loading, setLoading] = useState(false);
-        const stripe = useStripe();
-        const elements = useElements();
+const payments = getStripePayments(FIREBASE_APP, {
+  firestore: FIREBASE_STORE,
+  productsCollection: "products",
+  customersCollection: "customers",
+});
 
-        const subscriptionCost = 5.99;
-        const taxRate = 0.075;
-        const totalCost = (subscriptionCost * (1 + taxRate)).toFixed(2);
+const SignUp = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [redirecting, setRedirecting] = useState(false);
+  const navigate = useNavigate(); // For back button functionality
 
-        const handleSignUp = async (event) => {
-          event.preventDefault();
-          setLoading(true);
+  // Subscription details
+  const subscriptionCost = 5.99;
+  const taxRate = 0.07;
+  const totalCost = (subscriptionCost * (1 + taxRate)).toFixed(2);
 
-          try {
-            // Create user in Firebase Authentication
-            const userCredential = await createUserWithEmailAndPassword(FIREBASE_AUTH, email, password);
-            const user = userCredential.user;
-            console.log("Firebase user created:", user);
-              
-            // Create a new document in Firestore under 'users' collection
-            const userRef = doc(FIREBASE_DB, 'users', user.uid);
-            await setDoc(userRef, {
-              email: user.email,
-              player: true,
-              createdAt: new Date(),
-            });
+  // Handle form submission and payment
+  const handleSignUp = async (event) => {
+    event.preventDefault();
+    setLoading(true);
+    setError(null);
 
-            if (!stripe || !elements) {
-              console.error('Stripe.js has not loaded or elements are unavailable.');
-              setLoading(false);
-              return;
-            }
+    try {
+      const userCredential = await createUserWithEmailAndPassword(FIREBASE_AUTH, email, password);
+      const user = userCredential.user;
 
-            // Get the card element from Stripe Elements
-            const cardElement = elements.getElement(CardElement);
-            if (!cardElement) {
-              console.error('CardElement not found or not mounted correctly.');
-              setLoading(false);
-              return;
-            }
+      const checkoutSessionsCollection = collection(FIREBASE_STORE, "customers", user.uid, "checkout_sessions");
 
-            // Create a PaymentMethod using the card details
-            const { error, paymentMethod } = await stripe.createPaymentMethod({
-              type: 'card',
-              card: cardElement,
-              billing_details: { email },
-            });
+      const docRef = await addDoc(checkoutSessionsCollection, {
+        price: "price_1Q3HpvA466XWtdBipaKVaTaV",
+        success_url: `${window.location.origin}/payments/success`,
+        cancel_url: `${window.location.origin}/payments/cancel`,
+      });
 
-            if (error) {
-              console.error('[PaymentMethod Error]', error.message);
-              setLoading(false);
-              return;
-            }
-
-            // Send payment info to the backend to create a subscription
-            const response = await fetch('/create-checkout-session', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                paymentMethodId: paymentMethod.id,
-                email,
-                lookup_key: 'starter_plan',
-              }),
-            });
-
-            if (!response.ok) {
-              console.error('Error creating subscription:', await response.text());
-              setLoading(false);
-              return;
-            }
-
-            const session = await response.json();
-
-            // Redirect to Stripe Checkout
-            const stripeInstance = await stripePromise;
-            await stripeInstance.redirectToCheckout({ sessionId: session.id });
-
-            console.log('Redirecting to checkout!');
-          } catch (error) {
-            console.error('Error during sign-up or payment:', error.message);
-          }
-
+      const unsubscribe = onSnapshot(docRef, (snap) => {
+        const { error, url } = snap.data();
+        if (error) {
+          alert(`An error occurred: ${error.message}`);
           setLoading(false);
-        };
+        }
+        if (url) {
+          setRedirecting(true);
+          window.location.assign(url);
+        }
+      });
 
-        return (
-          <Elements stripe={stripePromise}>
-            <form onSubmit={handleSignUp} className="sign-up-form">
-              <h1>Sign Up & Subscribe</h1>
-              <div className="form-group">
-                <input
-                  type="email"
-                  placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />    
-              </div>
-              <div className="form-group">
-                <input
-                  type="password"
-                  placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
+    } catch (error) {
+      setError(`Error during sign-up or payment: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-              <h2>Payment Information</h2>
-              <div className="cost-breakdown">
-                <p>Subscription Cost: ${subscriptionCost.toFixed(2)}</p>
-                <p>Tax: ${(subscriptionCost * taxRate).toFixed(2)}</p>
-                <p><strong>Total: ${totalCost}</strong></p>
-              </div>
+  // Handle back button
+  const handleBack = () => {
+    navigate(-1); // Go back to the previous page
+  };
 
-              {/* CardElement should be inside the form */}
-              <CardElement />
-              
-              <button type="submit" disabled={!stripe || loading}>
-                {loading ? 'Processing...' : 'Sign Up & Pay $' + totalCost}
-              </button>
-            </form>
-          </Elements>
-        );
-      };
+  return (
+    <div className="sign-up-container">
+      {/* Back Button in Upper Right Corner */}
+      <div className="back-button-container">
+        <IconButton onClick={handleBack} className="back-button">
+          <ArrowBackIcon />
+        </IconButton>
+      </div>
 
-      export default SignUp;
+      <form onSubmit={handleSignUp} className="sign-up-form">
+        <h1>Sign Up & Subscribe</h1>
+
+        {/* Email Input */}
+        <div className="form-group">
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </div>
+
+        {/* Password Input */}
+        <div className="form-group">
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </div>
+
+        <h2>Payment Information</h2>
+
+        {/* Subscription Cost Breakdown */}
+        <div className="cost-breakdown">
+          <p>Subscription Cost: ${subscriptionCost.toFixed(2)}</p>
+          <p>Tax: ${(subscriptionCost * taxRate).toFixed(2)}</p>
+          <p><strong>Total: ${totalCost}</strong></p>
+        </div>
+
+        {/* Error Display */}
+        {error && <div className="error-message" style={{ color: 'red' }}>{error}</div>}
+
+        {/* Loading Indicator for Redirect */}
+        {redirecting && <div className="loading-message">Redirecting to payment...</div>}
+
+        {/* Submit Button */}
+        <button type="submit" disabled={loading || redirecting}>
+          {loading ? 'Processing...' : `Sign Up & Pay $${totalCost}`}
+        </button>
+      </form>
+    </div>
+  );
+};
+
+export default SignUp;

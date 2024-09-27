@@ -12,13 +12,13 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import Login from './Login';
 import SignUp from "./SignUp";
-import QRCodeDisplay from './QRCodeDisplay';  
-import { LeaderboardComponent } from './Leaderboard';
+import QRCodeDisplay from './QRCodeDisplay';
+import Leaderboard from './Leaderboard'; 
 import { FIREBASE_AUTH } from "./firebase";
 import './App.css';
-import LiveSessions, { startSession, endSession } from './LiveSessions'; 
+import LiveSessions, { startSession, endSession } from './LiveSessions';
 
-const stripePromise = loadStripe('pk_live_51Ow7goA466XWtdBifnrLrOBoMOu6VGECzCQMuMvB5faDbWBClqqQHRMoF1aXEPQVQiDX17j3gbtBtU2wmjdl7rPd002dR4kDFT');
+const stripePromise = loadStripe('pk_test_51Ow7goA466XWtdBiQakYrdadPmlpib7w6yeXTIxqo7enudMMl2Y5uEdGRGlmTOsChS5Jl0M1nkTiuCEbUZ8CgfTL00Y1tOYYMu');
 
 // ProtectedRoute component to handle authentication
 const ProtectedRoute = ({ children, user }) => {
@@ -108,7 +108,7 @@ function InsideLayout({ user }) {
       <div className="content">
         <Routes>
           <Route path="/LiveSessions" element={<LiveSessions />} />
-          <Route path="/Leaderboard" element={<LeaderboardComponent />} /> 
+          <Route path="/Leaderboard" element={<Leaderboard />} /> 
           <Route path="/qr-code" element={<QRCodeDisplay />} />
         </Routes>
       </div>

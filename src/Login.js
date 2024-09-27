@@ -1,10 +1,10 @@
-// src/components/Login.js
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom'; // Import Link from react-router-dom
 import { FIREBASE_AUTH } from './firebase'; // Firebase config
 import { signInWithEmailAndPassword } from 'firebase/auth'; // Firebase auth methods
 import './Login.css'; // Create a CSS file for styling
 import './App'; // Import main styles
+import CrosspointxLogo from './assets/Crosspointx.svg';
 
 const Login = () => {
   const [isRefLogin, setIsRefLogin] = useState(false); // Toggle between User and Ref login
@@ -47,7 +47,7 @@ const Login = () => {
 
   return (
     <div className="container">
-      <img src="/assets/Crosspointx.png" alt="Logo" className="logo" />
+      <img src={CrosspointxLogo} alt="Logo" className="logo" />
       <h1 className="title">Login</h1>
 
       {/* Toggle for User and Ref login */}
@@ -94,12 +94,11 @@ const Login = () => {
       )}
 
       {/* Signup link (changes depending on the login type) */}
-      <button 
-        onClick={() => navigate(isRefLogin ? '/refsignup' : '/signup')} 
-        className="link-text"
-      >
-        {isRefLogin ? 'Sign up as Referee' : "Don't have an account? Sign up here"}
-      </button>
+      <div className="signup-link">
+        <Link to={isRefLogin ? '/refsignup' : '/signup'} className="link-text">
+          {isRefLogin ? 'Sign up as Referee' : "Don't have an account? Sign up here"}
+        </Link>
+      </div>
     </div>
   );
 };

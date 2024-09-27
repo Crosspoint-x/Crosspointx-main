@@ -24,8 +24,8 @@
       // Initialize Firebase services
       const FIREBASE_AUTH = getAuth(FIREBASE_APP);
       const FIREBASE_REMOTE = getRemoteConfig(FIREBASE_APP);
-      const FIREBASE_DB = getFirestore(FIREBASE_APP);
-      const FIREBASE_DB2 = getDatabase(FIREBASE_APP);
+      const FIREBASE_STORE = getFirestore(FIREBASE_APP);
+      const FIREBASE_DB = getDatabase(FIREBASE_APP);
 
       // Initalize Firebase Analytics
       let FIREBASE_ANALYTICS;
@@ -39,4 +39,4 @@
       });
 
       // Export Firebase services
-      export { FIREBASE_APP, FIREBASE_AUTH, FIREBASE_DB, FIREBASE_DB2, FIREBASE_REMOTE, FIREBASE_ANALYTICS };
+      export { FIREBASE_APP, FIREBASE_AUTH, FIREBASE_DB, FIREBASE_STORE, FIREBASE_REMOTE, FIREBASE_ANALYTICS };

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { FIREBASE_DB2 } from "./firebase"; 
+import { FIREBASE_STORE } from "./firebase"; 
 import { ref, push, onValue, onDisconnect, set, remove } from "firebase/database";
 import './LiveSessions.css'; // Import the CSS for styling
 
@@ -12,7 +12,7 @@ export default function LiveSessions() {
 
   useEffect(() => {
     // Reference to the active users
-    const activeUsersRef = ref(FIREBASE_DB2, 'activeUsers');
+    const activeUsersRef = ref(FIREBASE_STORE, 'activeUsers');
 
     // Add the user to the active users list when they come online
     const userRef = push(activeUsersRef);
@@ -27,23 +27,23 @@ export default function LiveSessions() {
     });
 
     // Listen for outdoor active players and hits
-    const outdoorActiveRef = ref(FIREBASE_DB2, 'games/outdoor/active');
+    const outdoorActiveRef = ref(FIREBASE_STORE, 'games/outdoor/active');
     const unsubscribeOutdoorActive = onValue(outdoorActiveRef, (snapshot) => {
       setOutdoorActive(snapshot.val() || 0); // Set outdoor active players
     });
 
-    const outdoorHitsRef = ref(FIREBASE_DB2, 'games/outdoor/hits');
+    const outdoorHitsRef = ref(FIREBASE_STORE, 'games/outdoor/hits');
     const unsubscribeOutdoorHits = onValue(outdoorHitsRef, (snapshot) => {
       setOutdoorHits(snapshot.val() || 0); // Set outdoor hits
     });
 
     // Listen for indoor active players and hits
-    const indoorActiveRef = ref(FIREBASE_DB2, 'games/indoor/active');
+    const indoorActiveRef = ref(FIREBASE_STORE, 'games/indoor/active');
     const unsubscribeIndoorActive = onValue(indoorActiveRef, (snapshot) => {
       setIndoorActive(snapshot.val() || 0); // Set indoor active players
     });
 
-    const indoorHitsRef = ref(FIREBASE_DB2, 'games/indoor/hits');
+    const indoorHitsRef = ref(FIREBASE_STORE, 'games/indoor/hits');
     const unsubscribeIndoorHits = onValue(indoorHitsRef, (snapshot) => {
       setIndoorHits(snapshot.val() || 0); // Set indoor hits
     });
