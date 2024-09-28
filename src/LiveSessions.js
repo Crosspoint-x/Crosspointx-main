@@ -1,81 +1,55 @@
 import React, { useEffect, useState } from "react";
-import { FIREBASE_STORE } from "./firebase"; 
+import { FIREBASE_STORE, FIREBASE_DB } from "./firebase"; // Firebase configuration import
 import { ref, push, onValue, onDisconnect, set, remove } from "firebase/database";
-import './LiveSessions.css'; // Import the CSS for styling
+import './LiveSessions.css'; // CSS file
+import OrlandoPB from './assets/orlandopb.png';
 
 export default function LiveSessions() {
   const [activeUsers, setActiveUsers] = useState(0);
-  const [outdoorActive, setOutdoorActive] = useState(0);
-  const [indoorActive, setIndoorActive] = useState(0);
-  const [outdoorHits, setOutdoorHits] = useState(0);
-  const [indoorHits, setIndoorHits] = useState(0);
+  const [hitOutdoor, setHitOutdoor] = useState(0);
+  const [hitIndoor, setHitIndoor] = useState(0);
 
   useEffect(() => {
-    // Reference to the active users
-    const activeUsersRef = ref(FIREBASE_STORE, 'activeUsers');
+    const activeUsersRef = ref(FIREBASE_DB, 'activeUsers');
+    const hitOutdoorRef = ref(FIREBASE_DB, 'hitOutdoor');
+    const hitIndoorRef = ref(FIREBASE_DB, 'hitIndoor');
 
-    // Add the user to the active users list when they come online
     const userRef = push(activeUsersRef);
-    set(userRef, true); // Set the user as active before handling disconnection
+    set(userRef, true);
 
-    // Remove the user when they disconnect
-    onDisconnect(userRef).remove(); 
+    onDisconnect(userRef).remove();
 
-    // Listen for changes in the active users list
-    const unsubscribeActiveUsers = onValue(activeUsersRef, (snapshot) => {
-      setActiveUsers(snapshot.size); // Update the number of active users
+    const unsubscribeActive = onValue(activeUsersRef, (snapshot) => {
+      setActiveUsers(snapshot.size);
     });
 
-    // Listen for outdoor active players and hits
-    const outdoorActiveRef = ref(FIREBASE_STORE, 'games/outdoor/active');
-    const unsubscribeOutdoorActive = onValue(outdoorActiveRef, (snapshot) => {
-      setOutdoorActive(snapshot.val() || 0); // Set outdoor active players
+    const unsubscribeOutdoorHits = onValue(hitOutdoorRef, (snapshot) => {
+      setHitOutdoor(snapshot.val() || 0);
     });
 
-    const outdoorHitsRef = ref(FIREBASE_STORE, 'games/outdoor/hits');
-    const unsubscribeOutdoorHits = onValue(outdoorHitsRef, (snapshot) => {
-      setOutdoorHits(snapshot.val() || 0); // Set outdoor hits
+    const unsubscribeIndoorHits = onValue(hitIndoorRef, (snapshot) => {
+      setHitIndoor(snapshot.val() || 0);
     });
 
-    // Listen for indoor active players and hits
-    const indoorActiveRef = ref(FIREBASE_STORE, 'games/indoor/active');
-    const unsubscribeIndoorActive = onValue(indoorActiveRef, (snapshot) => {
-      setIndoorActive(snapshot.val() || 0); // Set indoor active players
-    });
-
-    const indoorHitsRef = ref(FIREBASE_STORE, 'games/indoor/hits');
-    const unsubscribeIndoorHits = onValue(indoorHitsRef, (snapshot) => {
-      setIndoorHits(snapshot.val() || 0); // Set indoor hits
-    });
-
-    // Cleanup on component unmount
     return () => {
-      remove(userRef); // Ensure user is removed when component unmounts
-      unsubscribeActiveUsers(); // Unsubscribe from active users
-      unsubscribeOutdoorActive(); // Unsubscribe from outdoor active
-      unsubscribeOutdoorHits(); // Unsubscribe from outdoor hits
-      unsubscribeIndoorActive(); // Unsubscribe from indoor active
-      unsubscribeIndoorHits(); // Unsubscribe from indoor hits
+      remove(userRef);
+      unsubscribeActive();
+      unsubscribeOutdoorHits();
+      unsubscribeIndoorHits();
     };
   }, []);
 
   return (
-    <div className="live-sessions-container">
-      <h1 className="live-sessions-title">Live Sessions</h1> {/* Moved here */}
-      <div className="games-info">
-        <img className="logo" src="/assets/OrlandoPB.png" alt="Orlando Paintball Logo" />
-        <div className="games-status">
+    <div className="live-sessions">
+      <h1>Live Sessions</h1>
+      <div className="live-sessions-container">
+        <div className="logo-container">
+          <img src={OrlandoPB} alt="Logo" className="logopb" />
+        </div>
+        <div className="game-stats">
           <h2>Games:</h2>
-          <div className="game-details">
-            <div className="outdoor-status">
-              <span>Outdoor Active: {outdoorActive}</span>
-              <span>Hit: {outdoorHits}</span>
-            </div>
-            <div className="indoor-status">
-              <span>Indoor Active: {indoorActive}</span>
-              <span>Hit: {indoorHits}</span>
-            </div>
-          </div>
+          <p>Outdoor Active: {activeUsers} | Hit: {hitOutdoor}</p>
+          <p>Indoor Active: {activeUsers} | Hit: {hitIndoor}</p>
         </div>
       </div>
     </div>

@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
-import { FIREBASE_DB } from './firebase'; // Assuming your Firebase export file
+import { FIREBASE_DB } from './firebase'; 
 import './Leaderboard.css';
 
 const Leaderboard = () => {
   const [scores, setScores] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch the leaderboard data from Firebase
   useEffect(() => {
     const fetchScores = async () => {
       setLoading(true);
@@ -27,37 +26,34 @@ const Leaderboard = () => {
   }, []);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return React.createElement('div', null, 'Loading...');
   }
 
-  return (
-    <div className="container">
-      <h1>Leaderboard</h1>
-      <table className="table">
-        <thead>
-          <tr>
-            <th>Player</th>
-            <th>Score</th>
-          </tr>
-        </thead>
-        <tbody>
-          {scores.length > 0 ? (
-            scores.map(score => (
-              <tr key={score.id}>
-                <td>{score.exact?.user || 'Unknown Player'}</td>
-                <td>{score.exact?.score || 'No Score'}</td>
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="2">No scores available</td>
-            </tr>
-          )}
-        </tbody>
-      </table>
-    </div>
+  return React.createElement('div', { className: 'container' },
+    React.createElement('h1', null, 'Leaderboard'),
+    React.createElement('table', { className: 'table' },
+      React.createElement('thead', null,
+        React.createElement('tr', null,
+          React.createElement('th', null, 'Player'),
+          React.createElement('th', null, 'Score')
+        )
+      ),
+      React.createElement('tbody', null,
+        scores.length > 0 ? (
+          scores.map(score => 
+            React.createElement('tr', { key: score.id },
+              React.createElement('td', null, score.exact?.user || 'Unknown Player'),
+              React.createElement('td', null, score.exact?.score || 'No Score')
+            )
+          )
+        ) : (
+          React.createElement('tr', null,
+            React.createElement('td', { colSpan: '2' }, 'No scores available')
+          )
+        )
+      )
+    )
   );
 };
 
 export default Leaderboard;
-

@@ -6,7 +6,8 @@
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
   max-width: 400px; /* Reduce max-width to prevent inputs from spilling over */
   margin: 40px auto;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'Roboto';
+  text-align: center;
   transition: all 0.3s ease;
 }
 
@@ -14,7 +15,7 @@ input {
   width: calc(100% - 24px); /* Ensure inputs stay within form bounds */
   padding: 12px;
   border: 1px solid #ddd;
-  border-radius: 6px;
+  border-radius: 25px;
   font-size: 16px;
   margin: 0 auto; /* Center the inputs */
   box-sizing: border-box; /* Include padding in the element's width */
@@ -39,6 +40,7 @@ h1, h2 {
 
 .form-group {
   margin-bottom: 20px;
+  text-align: center;
   opacity: 0;
   animation: fadeInUp 0.5s ease forwards;
 }
@@ -47,7 +49,7 @@ input {
   width: 100%;
   padding: 12px;
   border: 1px solid #ddd;
-  border-radius: 6px;
+  border-radius: 25px;
   font-size: 16px;
   transition: border-color 0.3s, box-shadow 0.3s;
 }
@@ -58,11 +60,11 @@ input:focus {
 }
 
 button {
-  background-color: #28a745;
+  background-color: #2870a7;
   color: white;
   padding: 12px;
   border: none;
-  border-radius: 6px;
+  border-radius: 25px;
   font-size: 18px;
   width: 100%;
   cursor: pointer;
@@ -83,19 +85,25 @@ button:disabled {
   background-color: #f9f9f9;
   padding: 12px;
   border: 1px solid #ddd;
-  border-radius: 6px;
+  border-radius: 25px;
   margin-bottom: 20px;
   opacity: 0;
   animation: fadeInUp 0.7s ease forwards;
 }
 
+/* Parent container that holds the form and logo */ 
+
+/* Logo styling to 
+
+
 /* styles.css */
 .card-element-container {
   border: 1px solid #e1e1e1;
-  border-radius: 6px;
+  border-radius: 25px;
   padding: 12px;
   width: 100%;
   max-width: 400px;
+  text-align: center;
   margin: 20px auto;
   transition: box-shadow 0.3s ease;
 }

@@ -16,7 +16,10 @@ import QRCodeDisplay from './QRCodeDisplay';
 import Leaderboard from './Leaderboard'; 
 import { FIREBASE_AUTH } from "./firebase";
 import './App.css';
-import LiveSessions, { startSession, endSession } from './LiveSessions';
+import LiveSessions from './LiveSessions';
+import AddScore from './AddScore';
+import { getDoc, doc } from 'firebase/firestore';
+import { FIREBASE_DB } from './firebase';
 
 const stripePromise = loadStripe('pk_test_51Ow7goA466XWtdBiQakYrdadPmlpib7w6yeXTIxqo7enudMMl2Y5uEdGRGlmTOsChS5Jl0M1nkTiuCEbUZ8CgfTL00Y1tOYYMu');
 
@@ -27,6 +30,39 @@ const ProtectedRoute = ({ children, user }) => {
   }
   return children;
 };
+
+function ProtectedRefRoute({ children, user }) {
+  const [isReferee, setIsReferee] = useState(false);
+
+  useEffect(() => {
+    const checkRefereeStatus = async () => {
+      try {
+        if (user) {
+          const userDoc = await getDoc(doc(FIREBASE_DB, 'users', user.uid));
+          if (userDoc.exists() && userDoc.data().isReferee) {
+            setIsReferee(true);
+          } else {
+            setIsReferee(false);
+          }
+        }
+      } catch (error) {
+        console.error('Error checking referee status:', error);
+        setIsReferee(false);
+      }
+    };
+    checkRefereeStatus();
+  }, [user]);
+
+  if (!user) {
+    return <Navigate to="/Login" />;
+  }
+
+  if (!isReferee) {
+    return <div>Access Denied. Only referees can access this page.</div>;
+  }
+
+  return children;
+}
 
 // Main App component
 export default function App() {
@@ -50,16 +86,14 @@ export default function App() {
   return (
     <div className="root">
       <Router>
-        <Elements stripe={stripePromise}> {/* Wrapping the app or relevant part */}
+        <Elements stripe={stripePromise}>
           <Routes>
             <Route path="/Login" element={<Login />} />
             <Route path="/SignUp" element={<SignUp />} />
-            {/* Protected routes for authenticated users */}
             <Route 
               path="*" 
               element={<ProtectedRoute user={user}><InsideLayout user={user} /></ProtectedRoute>} 
             />
-            {/* Fallback route to Login page if no user */}
             <Route path="*" element={<Navigate to={user ? "/Leaderboard" : "/Login"} />} />
           </Routes>
         </Elements>
@@ -70,7 +104,7 @@ export default function App() {
 
 // InsideLayout component for nested routes and bottom navigation
 function InsideLayout({ user }) {
-  const [value, setValue] = useState('/LiveSessions');
+  const [value, setValue] = useState('/LiveSessions'); // Set the initial state to the first page
   const navigate = useNavigate();
 
   const handleNavigationChange = (event, newValue) => {
@@ -89,6 +123,12 @@ function InsideLayout({ user }) {
   const handleBack = () => {
     navigate(-1); // Go back to the previous page
   };
+
+  useEffect(() => {
+    // Update the selected value based on the current path
+    const currentPath = window.location.pathname;
+    setValue(currentPath);
+  }, [user]); // Trigger the effect when user changes
 
   return (
     <div className="InsideLayout">
@@ -110,6 +150,10 @@ function InsideLayout({ user }) {
           <Route path="/LiveSessions" element={<LiveSessions />} />
           <Route path="/Leaderboard" element={<Leaderboard />} /> 
           <Route path="/qr-code" element={<QRCodeDisplay />} />
+          <Route path="/add-score" element={ <ProtectedRefRoute user={user}><AddScore />
+    </ProtectedRefRoute>
+  }
+/>
         </Routes>
       </div>
 
@@ -129,7 +173,9 @@ function InsideLayout({ user }) {
         <BottomNavigationAction label="LiveSessions" value="/LiveSessions" icon={<SatelliteAltIcon />} />
         <BottomNavigationAction label="Leaderboard" value="/Leaderboard" icon={<LeaderboardIcon />} />
         <BottomNavigationAction label="QR Code" value="/qr-code" icon={<QrCodeIcon />} />
+        <BottomNavigationAction label="Add Score" value="/add-score" icon={<QrCodeIcon />} />
       </BottomNavigation>
     </div>
   );
 }
+              

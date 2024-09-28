@@ -1,19 +1,47 @@
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes buttonHover {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
 /* Centered box like SignUp.css */
 .container {
   background-color: #fff;
-  padding: 25px;
+  padding: 25px;  
   border-radius: 12px;
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
   max-width: 400px;
   margin: 40px auto;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'Roboto';
   text-align: center;
+  opacity: 0; /* Start with 0 opacity */
+  transition: all 0.3s ease;
+  animation: fadeInUp 0.8s ease-in-out forwards; /* Apply the fadeInUp animation */
 }       
 
 .logo {
   width: 120px;
   height: 120px;
   margin-bottom: 30px;
+  animation: fadeIn 0.8s ease-in-out;
 }
 
 .title {
@@ -21,25 +49,31 @@
   font-weight: bold;
   margin-bottom: 20px;
   color: #333;
+  animation: fadeIn 0.9s ease-in-out;
 }
 
 .toggle-container {
   display: flex;
-  justify-content: center;
-  gap: 10px; /* Add space between the buttons */
+  
+  gap: 10px; /* Gap between the two buttons */
   margin-bottom: 20px;
+  width: 100%; /* Full width of the parent container */
 }
 
 .toggle-button {
-  padding: 10px 30px;
+  padding: 10px; 
+  margin: 0px 10px 0px 10px ; 
   border-radius: 25px;
-  background-color: #e0e0e0;
+  background-color: #afacac;
   cursor: pointer;
   font-size: 16px;
+  width: 50%;
+  text-align: center;   
+  box-sizing: border-box; 
 }
 
 .active-toggle {
-  background-color: #10aae2;
+  background-color: #2870a7;
   color: white;
 }
 
@@ -47,20 +81,22 @@
   width: calc(100% - 24px);
   padding: 12px;
   border: 1px solid #ddd;
-  border-radius: 6px;
+  border-radius: 25px;
   font-size: 16px;
   margin-bottom: 20px;
   box-sizing: border-box;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  animation: fadeIn 1.2s ease-in-out;
 }
 
 .input:focus {
-  border-color: #007bff;
   box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
-} 
+}
 
 .loader {
   font-size: 18px;
   margin-bottom: 15px;
+  animation: fadeIn 1.3s ease-in-out;
 }
 
 .button {
@@ -68,16 +104,17 @@
   color: white;
   padding: 12px;
   border: none;
-  border-radius: 6px;
+  border-radius: 25px;
   font-size: 18px;
-  width: 100%;
+  width: calc(100% - 24px);
   cursor: pointer;
   transition: background-color 0.3s, transform 0.3s;
+  animation: fadeIn 1.4s ease-in-out;
 }
 
 .button:hover {
   background-color: #328cc8;
-  transform: translateY(-2px);
+  animation: buttonHover 0.6s ease-in-out infinite;
 }
 
 .button:disabled {
@@ -87,24 +124,16 @@
 
 .signup-link {
   margin-top: 20px;
+  animation: fadeIn 1.5s ease-in-out;
 }
 
 .link-text {
-  color: #007bff;
-  text-decoration: none;
+  color: #2870a7;
+  text-decoration: underline;
+  transition: color 0.3s ease;
 }
 
 .link-text:hover {
+  color: #d44e00;
   text-decoration: underline;
 }
-
-
-
-
-
-
-
-
-
-
-

@@ -20,3 +20,16 @@
     font-size: 18px;
     color: #666;
   }
+
+  .qr-code-container {
+    display: flex; /* Use flexbox to center content */
+    flex-direction: column; /* Stack elements vertically */
+    align-items: center; /* Center children horizontally */
+    justify-content: center; /* Center children vertically */
+    margin: 40px auto; /* Center the container on the page */
+    text-align: center; /* Center text within the container */
+    background-color: #ffffff00; /* Optional: background color */
+    padding: 25px; /* Optional: padding around the container */
+    border-radius: 12px; /* Optional: rounded corners */
+  }
+  

@@ -1,75 +1,43 @@
 body {
-  font-family: 'Arial', sans-serif;
+  font-family: 'Roboto', sans-serif;
   background-color: #f0f0f5;
 }
 
 .live-sessions-container {
-  text-align: center;
+  display: flex; /* Use flexbox to align logo and text */
+  justify-content: center; /* Center the items horizontally */
+  align-items: center; /* Center the items vertically */
   margin-top: 50px;
+  text-align: center; /* Center text in the container */
 }
 
-.live-sessions-title {
-  text-align: top; /* Center the title */
-  font-size: 2rem; /* Adjust font size as needed */
-  margin-bottom: 20px; /* Space below the title */
+.logo-container {
+  margin-right: 30px; /* Space between logo and text */
+}
+
+.logopb  {
+  width: 250px; /* Adjust size as needed */
+  height: auto; /* Maintain aspect ratio */
+}
+
+.game-stats {
+  background-color: #fff; /* Optional: background color for better contrast */
+  border: 3   px solid #222;
+  padding: 20px; /* Optional: padding */
+  border-radius: 15px; /* Optional: rounded corners */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: shadow effect */
 }
 
 h1 {
-  text-align: top; /* Center the title */
   font-size: 2rem; /* Adjust font size as needed */
   margin-bottom: 20px; /* Space below the title */
 }
 
-.games-info {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 20px;
+.game-stats h2 {
+  font-size: 1.5rem; /* Font size for game stats heading */
+  margin-bottom: 15px; /* Space below the heading */
 }
 
-.logo {
-  width: 150px;
-  margin-right: 30px;
-}
-
-.games-status {
-  background-color: #333;
-  color: white;
-  padding: 20px;
-  border-radius: 15px;
-  width: 350px;
-}
-
-.games-status h2 {
-  color:#f0f0f5;
-  text-align: top;
-  font-size: 1.5rem;
-  margin-bottom: 15px;
-}
-
-.game-details {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.outdoor-status, .indoor-status {
-  display: flex;
-  justify-content: space-between;
-}
-
-.outdoor-status span, .indoor-status span {
-  font-size: 1.25rem;
-}
-
-.outdoor-status {
-  background-color: #444;
-  padding: 10px;
-  border-radius: 10px;
-}
-
-.indoor-status {
-  background-color: #555;
-  padding: 10px;
-  border-radius: 10px;
+.game-stats p {
+  font-size: 1.25rem; /* Font size for stats */
 }
