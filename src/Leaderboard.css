@@ -1,5 +1,5 @@
 body {
-  font-family: 'Arial', sans-serif;
+  font-family: 'Roboto';
   background-color: #f0f0f5;
 }
 
@@ -13,6 +13,11 @@ body {
   text-align: center; /* Center the text */
 }
 
+.leaderboard {
+  margin: 0px;
+  border-radius: 25px;
+}
+
 .leaderboard-title {
   font-size: 2rem; /* Title font size */
   margin-bottom: 20px; /* Space below the title */
@@ -20,23 +25,48 @@ body {
 
 .table {
   width: 100%; /* Full width */
-  border-radius: 25px;
-  border-collapse: collapse; /* Remove spaces between cells */
+  /*border-collapse: collapse;  Remove spaces between cells */
   margin-top: 20px; /* Space above the table */
+  border-radius: 16px;
+  border-spacing: 0px;
+  overflow:hidden;
+  border-color: #ddd;
+  border-width: 1px;
+  margin-bottom: 10px;
 }
 
 .table th, .table td {
   padding: 12px; /* Consistent padding for table cells */
   border: 1px solid #ddd; /* Light border for table cells */
+  border-collapse: collapse;
+}
+
+thead {
+  border-spacing: 0px;
+  border-color: #2870a7;
+}
+
+thead tr {
+  border-color: #2870a7;
 }
 
 .table th {
   background-color: #2870a7; /* Header background color */
   color: white; /* Header text color */
+  overflow: hidden;
+  border-spacing: 0px;
+  border-left: 0px;
+  border-right: 0px;
 }
 
 .table tr:nth-child(even) {
   background-color: #f9f9f9; /* Light background for even rows */
+  border-collapse: collapse;
+}
+
+.table tr:last-child {
+  border-radius: 16px;
+  border: 1px solid #ddd;
 }
 
 .table tr:hover {
@@ -45,6 +75,8 @@ body {
 
 .table td {
   font-size: 1.25rem; /* Increased font size for table cells */
+  border-bottom-left: 1px;
+  overflow: hidden;
 }
 
 .error-message {

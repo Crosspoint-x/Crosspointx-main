@@ -1,61 +1,59 @@
-.App {
-  text-align: center;
+.vsc-initialized {
+  margin: 0%;
 }
 
-.font-link {
-  font-family: 'Roboto';
+.body {
+  margin: 0;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.add-score-container {
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  max-width: 400px;
+  margin: 20px auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.add-score-form {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+}
+
+.add-score-form input,
+.add-score-form select {
+  margin-bottom: 10px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.add-score-form button {
+  background-color: #4CAF50;
   color: white;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.footer {
+  border: none;
   padding: 10px;
-  text-align: center;
-  background-color: #e0e0e0;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
 }
 
-.Back {
-  position: fixed;
-  top: 0;
-  left: 0;
-  display: flex;
-  justify-content: left;
-  padding: 10px;
-  z-index: 1000; 
+.add-score-form button:hover {
+  background-color: #45a049;
 }
+
+.error-message {
+  color: red;
+  margin-top: 10px;
+}
+
+.success-message {
+  color: green;
+  margin-top: 10px;
+}
+
 .Logout {
   position: fixed;
   top: 0;
@@ -68,11 +66,15 @@
 }
 
 /* Style for Back button */
-.back-button {
-  margin-right: 10px;
-  top: 0;
-  right: 0;
+.Back {
   position: fixed;
+  top: 0;
+  left: 0;
+  display: flex;
+  justify-content: right;
+  padding: 10px;
+  z-index: 1000;
+  color:darkred;
 }
 
 /* Style for Logout button */
@@ -80,7 +82,3 @@
   margin-right: 10px;
 }
 
-/* Ensure the InsideLayout content is not hidden by fixed positioning */
-.InsideLayout {
-  padding-top: 60px; /* Adjust based on header height */
-}

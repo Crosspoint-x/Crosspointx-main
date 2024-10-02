@@ -1,43 +1,104 @@
-body {
-  font-family: 'Roboto', sans-serif;
-  background-color: #f0f0f5;
-}
+/* LiveSessions.css */
 
 .live-sessions-container {
-  display: flex; /* Use flexbox to align logo and text */
-  justify-content: center; /* Center the items horizontally */
-  align-items: center; /* Center the items vertically */
-  margin-top: 50px;
-  text-align: center; /* Center text in the container */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.logo-container {
-  margin-right: 30px; /* Space between logo and text */
+.location-box {
+  display: flex;
+  background-color: #fff;
+  align-items: center;
+  padding: 10px;
+  margin: 10px;
+  border-radius: 8px;
+  width: 300px;
+  justify-content: space-between;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
 }
 
-.logopb  {
-  width: 250px; /* Adjust size as needed */
-  height: auto; /* Maintain aspect ratio */
+.logo-container img {
+  width: 80px; /* Adjust logo size */
+  height: auto;
+}
+
+.location-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.verification-box {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  font-weight: bold;
+  margin-top: 5px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid;
+  position: relative;
+  overflow: hidden;
+}
+
+.verification-box .checkmark {
+  margin-right: 5px;
+}
+
+.unverified {
+  color: #777;
+  border-color: #777;
+}
+
+.unverified:hover {
+  background-color: #777;
+  color: #FFF;
+  border-color: #777;
+}
+
+.verified {
+  color: #d4af37; /* Gold color for verified */
+  border-color: #d4af37;
+}
+
+.verified:hover {
+  background-color: #d4af37; 
+  color: #fff; /* Gold color for verified */
+  border-color: #d4af37;
+}
+
+/* Add shine effect on hover */
+.verification-box:hover::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: rotate(45deg);
+  transition: all 0.5s ease;
+}
+
+.verification-box:hover::before {
+  animation: shine 0.8s ease-in-out forwards;
+}
+
+/* Keyframe for the shine effect */
+@keyframes shine {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
 }
 
 .game-stats {
-  background-color: #fff; /* Optional: background color for better contrast */
-  border: 3   px solid #222;
-  padding: 20px; /* Optional: padding */
-  border-radius: 15px; /* Optional: rounded corners */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: shadow effect */
-}
-
-h1 {
-  font-size: 2rem; /* Adjust font size as needed */
-  margin-bottom: 20px; /* Space below the title */
-}
-
-.game-stats h2 {
-  font-size: 1.5rem; /* Font size for game stats heading */
-  margin-bottom: 15px; /* Space below the heading */
-}
-
-.game-stats p {
-  font-size: 1.25rem; /* Font size for stats */
+  margin-top: 20px;
+  font-size: 18px;
+  text-align: center;
 }

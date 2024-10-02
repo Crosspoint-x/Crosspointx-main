@@ -93,8 +93,10 @@ button:disabled {
 
 /* Parent container that holds the form and logo */ 
 
-/* Logo styling to 
-
+/* Logo styling to */
+.logo {
+  align-self: center;
+}
 
 /* styles.css */
 .card-element-container {

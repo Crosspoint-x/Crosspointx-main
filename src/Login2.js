@@ -45,7 +45,7 @@ const Login = ({ setIsReferee }) => {
     } finally {
       setLoading(false);
     }
-    console.log(setIsReferee)
+    console.log(isRefereeLogin)
   };
   
   return (
@@ -73,5 +73,6 @@ const Login = ({ setIsReferee }) => {
   );
 };
 
-export default Login;
+export default isReferee;
+
       

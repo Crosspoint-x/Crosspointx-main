@@ -12,14 +12,13 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import Login from './Login';
 import SignUp from "./SignUp";
-import QRCodeDisplay from './QRCodeDisplay';
+import          { QRCodeScanner, QRCodeDisplay } from './QRCodeDisplay';
 import Leaderboard from './Leaderboard'; 
-import { FIREBASE_AUTH } from "./firebase";
 import './App.css';
 import LiveSessions from './LiveSessions';
 import AddScore from './AddScore';
 import { getDoc, doc } from 'firebase/firestore';
-import { FIREBASE_DB } from './firebase';
+import { FIREBASE_DB, FIREBASE_STORE, FIREBASE_AUTH } from './firebase';
 
 const stripePromise = loadStripe('pk_test_51Ow7goA466XWtdBiQakYrdadPmlpib7w6yeXTIxqo7enudMMl2Y5uEdGRGlmTOsChS5Jl0M1nkTiuCEbUZ8CgfTL00Y1tOYYMu');
 
@@ -33,41 +32,54 @@ const ProtectedRoute = ({ children, user }) => {
 
 function ProtectedRefRoute({ children, user }) {
   const [isReferee, setIsReferee] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const checkRefereeStatus = async () => {
       try {
         if (user) {
-          const userDoc = await getDoc(doc(FIREBASE_DB, 'users', user.uid));
-          if (userDoc.exists() && userDoc.data().isReferee) {
-            setIsReferee(true);
+          // Fetch the user's document from the 'refs' collection in Firestore
+          const userDoc = await getDoc(doc(FIREBASE_STORE, 'refs', user.uid));
+
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            console.log('Fetched user data:', userData);
+
+            // Set referee status based on 'isReferee' field in Firestore
+            setIsReferee(userData?.isReferee || false); // Default to false if the field doesn't exist
           } else {
+            console.error('User document does not exist in refs collection.');
             setIsReferee(false);
           }
         }
       } catch (error) {
         console.error('Error checking referee status:', error);
         setIsReferee(false);
+      } finally {
+        setLoading(false); // Always stop loading, regardless of success or error
       }
     };
+
     checkRefereeStatus();
   }, [user]);
 
-  if (!user) {
-    return <Navigate to="/Login" />;
+  if (loading) {
+    return <div>Loading...</div>; // Show loading spinner while checking status
   }
 
   if (!isReferee) {
-    return <div>Access Denied. Only referees can access this page.</div>;
+    return <div>Access Denied. Only referees can access this page.</div>; // Display access denied for non-refs
   }
 
-  return children;
+  return children; // Render children if user is a referee
 }
+
 
 // Main App component
 export default function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isReferee, setIsReferee] = useState(false); // Add state to track referee status
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, (user) => {
@@ -88,7 +100,7 @@ export default function App() {
       <Router>
         <Elements stripe={stripePromise}>
           <Routes>
-            <Route path="/Login" element={<Login />} />
+            <Route path="/Login" element={<Login setIsReferee={setIsReferee} />} /> {/* Pass setIsReferee */}
             <Route path="/SignUp" element={<SignUp />} />
             <Route 
               path="*" 
@@ -150,10 +162,14 @@ function InsideLayout({ user }) {
           <Route path="/LiveSessions" element={<LiveSessions />} />
           <Route path="/Leaderboard" element={<Leaderboard />} /> 
           <Route path="/qr-code" element={<QRCodeDisplay />} />
-          <Route path="/add-score" element={ <ProtectedRefRoute user={user}><AddScore />
-    </ProtectedRefRoute>
-  }
-/>
+          <Route 
+            path="/add-score" 
+            element={
+              <ProtectedRefRoute user={user}>
+                <AddScore />
+              </ProtectedRefRoute>
+            } 
+          />
         </Routes>
       </div>
 
@@ -178,4 +194,4 @@ function InsideLayout({ user }) {
     </div>
   );
 }
-              
+

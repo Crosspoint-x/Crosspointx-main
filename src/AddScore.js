@@ -1,69 +1,68 @@
-import React, { useState, useEffect } from 'react';
-import { doc, setDoc, collection, updateDoc, getDoc } from 'firebase/firestore';
-import { FIREBASE_DB, FIREBASE_AUTH } from './firebase';
+import React, { useEffect, useState } from 'react';
+import { ref, onValue, set } from 'firebase/database';
+import { FIREBASE_DB } from './firebase'; // Firebase Realtime DB config
 import './AddScore.css';
 
-const AddScore = () => {
-  const [teamAPlayerID, setTeamAPlayerID] = useState('');
-  const [teamBPlayerID, setTeamBPlayerID] = useState('');
-  const [outcome, setOutcome] = useState('');
-  const [error, setError] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
-  const [isReferee, setIsReferee] = useState(false);
+const AddScore = ({ locationId }) => {
+  const [activePlayers, setActivePlayers] = useState([]);
+  const [teamA, setTeamA] = useState([]);
+  const [teamB, setTeamB] = useState([]);
+  const [gameResult, setGameResult] = useState('');
 
   useEffect(() => {
-    const checkRefereeStatus = async () => {
-      try {
-        const user = FIREBASE_AUTH.currentUser;
-        if (user) {
-          const userDoc = await getDoc(doc(FIREBASE_DB, 'users', user.uid));
-          if (userDoc.exists() && userDoc.data().isReferee) {
-            setIsReferee(true);
-          } else {
-            setIsReferee(false);
-          }
-        }
-      } catch (error) {
-        console.error('Error checking referee status:', error);
-        setIsReferee(false);
-      }
-    };
-  
-    checkRefereeStatus();
-  }, []);
-  
+    const activePlayersRef = ref(FIREBASE_DB, `locations/${locationId}/activePlayers`);
 
-  const handleAddScore = async (e) => {
-    e.preventDefault();
-    if (!isReferee) {
-      setError('Access denied. Only referees can add scores.');
-      return;
-    }
+    // Fetch active players for the current game
+    onValue(activePlayersRef, (snapshot) => {
+      const playersData = snapshot.val() || {};
+      setActivePlayers(Object.values(playersData));
+    });
+  }, [locationId]);
 
-    if (!teamAPlayerID || !teamBPlayerID || !outcome) {
-      setError('Please enter player IDs for both teams and select an outcome.');
-      return;
-    }
-
-    try {
-      // Existing code to add scores goes here
-      // ...
-
-      setSuccessMessage('Score updated successfully!');
-    } catch (err) {
-      setError('Failed to update score. Please try again.');
+  const handleTeamAssignment = (playerId, team) => {
+    if (team === 'A') {
+      setTeamA([...teamA, playerId]);
+      setTeamB(teamB.filter((id) => id !== playerId)); // Remove from Team B if present
+    } else {
+      setTeamB([...teamB, playerId]);
+      setTeamA(teamA.filter((id) => id !== playerId)); // Remove from Team A if present
     }
   };
 
-  return isReferee ? (
+  const handleGameResult = async (winningTeam) => {
+    const winningTeamRef = ref(FIREBASE_DB, `locations/${locationId}/currentGame/${winningTeam}`);
+    const losingTeam = winningTeam === 'teamA' ? 'teamB' : 'teamA';
+
+    // Update wins for all players in the winning team
+    teamA.forEach(async (playerId) => {
+      const playerRef = ref(FIREBASE_DB, `locations/${locationId}/currentGame/teamA/${playerId}`);
+      await set(playerRef, {
+        wins: 1, // Increment their wins (or calculate based on previous value)
+      });
+    });
+
+    // Set game result
+    setGameResult(`Team ${winningTeam === 'teamA' ? 'A' : 'B'} wins!`);
+  };
+
+  return (
     <div className="add-score-container">
-      <h2>Add Match Result</h2>
-      <form className="add-score-form" onSubmit={handleAddScore}>
-        {/* Form fields for adding match results */}
-      </form>
+      <h2>Assign Players to Teams</h2>
+      <div className="active-players">
+        {activePlayers.map((player) => (
+          <div key={player.userId}>
+            <p>{player.name}</p>
+            <button onClick={() => handleTeamAssignment(player.userId, 'A')}>Add to Team A</button>
+            <button onClick={() => handleTeamAssignment(player.userId, 'B')}>Add to Team B</button>
+          </div>
+        ))}
+      </div>
+
+      <h2>Game Result</h2>
+      <button onClick={() => handleGameResult('teamA')}>Team A Wins</button>
+      <button onClick={() => handleGameResult('teamB')}>Team B Wins</button>
+      {gameResult && <p>{gameResult}</p>}
     </div>
-  ) : (
-    <div className="error">Access Denied. You are not a referee.</div>
   );
 };
 
