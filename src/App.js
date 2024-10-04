@@ -12,7 +12,7 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import Login from './Login';
 import SignUp from "./SignUp";
-import          { QRCodeScanner, QRCodeDisplay } from './QRCodeDisplay';
+import { QRCodeScanner, QRCodeDisplay } from './QRCodeDisplay';
 import Leaderboard from './Leaderboard'; 
 import './App.css';
 import LiveSessions from './LiveSessions';
@@ -162,13 +162,7 @@ function InsideLayout({ user }) {
           <Route path="/LiveSessions" element={<LiveSessions />} />
           <Route path="/Leaderboard" element={<Leaderboard />} /> 
           <Route path="/qr-code" element={<QRCodeDisplay />} />
-          <Route 
-            path="/add-score" 
-            element={
-              <ProtectedRefRoute user={user}>
-                <AddScore />
-              </ProtectedRefRoute>
-            } 
+          <Route path="/add-score" element={<AddScore />} 
           />
         </Routes>
       </div>

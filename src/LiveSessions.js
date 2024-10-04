@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { FIREBASE_STORE, FIREBASE_DB } from "./firebase"; // Firebase configuration import
-import { ref, onValue } from "firebase/database";
+import { FIREBASE_STORE } from "./firebase"; // Firestore configuration import
+import { doc, collection, getDoc, onSnapshot } from "firebase/firestore"; // Firestore imports
 import './LiveSessions.css'; // CSS file
 import OrlandoPB from './assets/orlandopb.png';
 
@@ -13,20 +13,28 @@ export default function LiveSessions() {
   const [leaderboard, setLeaderboard] = useState([]);
 
   useEffect(() => {
-    const activeUsersRef = ref(FIREBASE_DB, 'activeUsers');
-    const hitOutdoorRef = ref(FIREBASE_DB, 'hitOutdoor');
-    const hitIndoorRef = ref(FIREBASE_DB, 'hitIndoor');
+    // Firestore references for documents
+    const activeUsersRef = doc(FIREBASE_STORE, 'stats/activeUsers');
+    const hitOutdoorRef = doc(FIREBASE_STORE, 'stats/hitOutdoor');
+    const hitIndoorRef = doc(FIREBASE_STORE, 'stats/hitIndoor');
 
-    const unsubscribeActive = onValue(activeUsersRef, (snapshot) => {
-      setActiveUsers(snapshot.size);
+    // Use Firestore's onSnapshot to listen for live updates
+    const unsubscribeActive = onSnapshot(activeUsersRef, (docSnapshot) => {
+      if (docSnapshot.exists()) {
+        setActiveUsers(docSnapshot.data().count || 0);
+      }
     });
 
-    const unsubscribeOutdoorHits = onValue(hitOutdoorRef, (snapshot) => {
-      setHitOutdoor(snapshot.val() || 0);
+    const unsubscribeOutdoorHits = onSnapshot(hitOutdoorRef, (docSnapshot) => {
+      if (docSnapshot.exists()) {
+        setHitOutdoor(docSnapshot.data().count || 0);
+      }
     });
 
-    const unsubscribeIndoorHits = onValue(hitIndoorRef, (snapshot) => {
-      setHitIndoor(snapshot.val() || 0);
+    const unsubscribeIndoorHits = onSnapshot(hitIndoorRef, (docSnapshot) => {
+      if (docSnapshot.exists()) {
+        setHitIndoor(docSnapshot.data().count || 0);
+      }
     });
 
     return () => {
@@ -38,20 +46,18 @@ export default function LiveSessions() {
 
   // Fetch active games for the selected location
   const fetchActiveGames = (location) => {
-    // Replace with your own Firebase query for active games
-    const activeGamesRef = ref(FIREBASE_DB, `locations/${location}/activeGames`);
-    onValue(activeGamesRef, (snapshot) => {
-      const games = snapshot.val() || [];
+    const activeGamesRef = collection(FIREBASE_STORE, `locations/${location}/activeGames`);
+    onSnapshot(activeGamesRef, (snapshot) => {
+      const games = snapshot.docs.map(doc => doc.data());
       setActiveGames(games);
     });
   };
 
   // Fetch leaderboard for the selected location
   const fetchLeaderboard = (location) => {
-    // Replace with your own Firebase query for the leaderboard
-    const leaderboardRef = ref(FIREBASE_DB, `locations/${location}/leaderboard`);
-    onValue(leaderboardRef, (snapshot) => {
-      const leaderboardData = snapshot.val() || [];
+    const leaderboardRef = collection(FIREBASE_STORE, `locations/${location}/leaderboard`);
+    onSnapshot(leaderboardRef, (snapshot) => {
+      const leaderboardData = snapshot.docs.map(doc => doc.data());
       setLeaderboard(leaderboardData);
     });
   };
@@ -82,7 +88,7 @@ export default function LiveSessions() {
           {activeGames.length > 0 ? (
             <ul>
               {activeGames.map((game, index) => (
-                <li key={index}>{game}</li>
+                <li key={index}>{game.name}</li> // Assuming each game has a "name" property
               ))}
             </ul>
           ) : (

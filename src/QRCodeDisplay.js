@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { FIREBASE_STORE, FIREBASE_DB, FIREBASE_AUTH } from './firebase'; // Firebase configuration
-import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
-import { ref, set } from 'firebase/database';
+import { FIREBASE_STORE, FIREBASE_AUTH } from './firebase'; // Firebase configuration
+import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore'; // Firestore imports
 import { QRCodeSVG } from 'qrcode.react';
 import './QRCodeDisplay.css';
 
@@ -12,10 +11,23 @@ const QRCodeDisplay = () => {
 
   useEffect(() => {
     if (user) {
-      // Generate QR code value based on user data
       const userId = user.uid;
       const userEmail = user.email;
+
+      // Generate the QR code based on user data
       setQrCodeValue(`User ID: ${userId}\nEmail: ${userEmail}`);
+
+      // Ensure the user document exists in Firestore
+      const userDocRef = doc(FIREBASE_STORE, 'users', userId);
+      getDoc(userDocRef).then((docSnap) => {
+        if (!docSnap.exists()) {
+          // Create the user document if it doesn't exist
+          setDoc(userDocRef, {
+            email: userEmail,
+            createdAt: new Date(),
+          });
+        }
+      });
     }
   }, [user]);
 
@@ -38,7 +50,14 @@ const QRCodeScanner = ({ locationId }) => {
     // Simulate scanning the QR code
     const scannedData = qrValue; // In production, this would come from a QR code scanner library
 
-    const [userId] = scannedData.match(/User ID: (\w+)/);
+    // Extract the user ID from the scanned data (assuming the format is "User ID: xxx")
+    const match = scannedData.match(/User ID: (\w+)/);
+    if (!match) {
+      console.error('Invalid QR code format');
+      return;
+    }
+
+    const userId = match[1]; // Extract userId from the regex match
 
     // Fetch user information from Firestore
     const userDocRef = doc(FIREBASE_STORE, 'users', userId);
@@ -48,13 +67,13 @@ const QRCodeScanner = ({ locationId }) => {
       const userData = userDoc.data();
       setScannedPlayer({ userId, ...userData });
 
-      // Add the user as an active player in the specified location
-      const playerRef = ref(FIREBASE_DB, `locations/${locationId}/activePlayers/${userId}`);
-      await set(playerRef, {
+      // Add the user as an active player in the specified location in Firestore
+      const playerDocRef = doc(FIREBASE_STORE, `locations/${locationId}/activePlayers`, userId);
+      await setDoc(playerDocRef, {
         name: userData.name || userData.email,
         team: 'A', // Or assign based on logic
         isReferee: false,
-      });
+      }, { merge: true }); // Use merge to update existing data or create new
     } else {
       console.error('User not found');
     }
