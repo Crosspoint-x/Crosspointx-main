@@ -12,13 +12,13 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import Login from './Login';
 import SignUp from "./SignUp";
-import { QRCodeScanner, QRCodeDisplay } from './QRCodeDisplay';
+import { QRCodeDisplay, QRCodeScanner } from './QRCodeDisplay';
 import Leaderboard from './Leaderboard'; 
 import './App.css';
 import LiveSessions from './LiveSessions';
 import AddScore from './AddScore';
 import { getDoc, doc } from 'firebase/firestore';
-import { FIREBASE_DB, FIREBASE_STORE, FIREBASE_AUTH } from './firebase';
+import { FIREBASE_STORE, FIREBASE_AUTH } from './firebase';
 
 const stripePromise = loadStripe('pk_test_51Ow7goA466XWtdBiQakYrdadPmlpib7w6yeXTIxqo7enudMMl2Y5uEdGRGlmTOsChS5Jl0M1nkTiuCEbUZ8CgfTL00Y1tOYYMu');
 

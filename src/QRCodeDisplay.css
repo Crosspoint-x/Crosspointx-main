@@ -1,45 +1,36 @@
-.qr-code-display {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
-  }
-  
-  .qr-code-display h1 {
-    margin-bottom: 10px;
-  }
-  
-  .qr-code-display img {
-    width: 200px;
-    height: 200px;
-    border-radius: 10px;
-    margin: 20px;
-  }
-  
-  .qr-code-display p {
-    font-size: 18px;
-    color: #666;
-  }
-
-  /* Apply styles to SVG QR code */
-.qrcode-container svg {
-  fill: #333333; /* Apply custom color */
+.qr-code-container {
+  text-align: center;
+  padding: 20px;
 }
 
-.qrcode-container svg rect {
-  rx: 5px; /* Rounded corners for QR code dots */
+.qr-code-actions {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
 }
 
-  .qr-code-container {
-    display: flex;
-    flex-direction: column; 
-    align-items: center; 
-    justify-content: center; 
-    margin: 40px auto; 
-    text-align: center;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); 
-    background-color: #ffffff;
-    padding: 25px; /* Optional: padding around the container */
-    border-radius: 12px; /* Optional: rounded corners */
-  }
-  
+.icon-print, .icon-camera {
+  font-size: 24px;
+  cursor: pointer;
+  color: #333;
+}
+
+.icon-print:hover, .icon-camera:hover {
+  color: #007bff; /* Change color on hover */
+}
+
+.qr-scanner {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.scanned-data {
+  margin-top: 20px;
+}
+
+.scanned-data h3 {
+  margin-bottom: 10px;
+}
