@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { doc, setDoc, getDoc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { FIREBASE_STORE } from './firebase'; // Firestore config
+import './LiveSessions'; 
 import './AddScore.css';
 
-const AddScore = ({ locationId }) => {
+const AddScore = ({ location }) => {
   const [activePlayers, setActivePlayers] = useState([]);
   const [teamA, setTeamA] = useState([]);
   const [teamB, setTeamB] = useState([]);
@@ -11,23 +12,24 @@ const AddScore = ({ locationId }) => {
   const [inputPlayer, setInputPlayer] = useState(''); // Text input for adding player
 
   useEffect(() => {
-    if (!locationId) {
-      console.error("Invalid locationId: ", locationId);
+    if (!location) {
+      console.error("Invalid locationId: ", location);
       return; // If locationId is undefined, exit early
     }
-
-    const activePlayersRef = doc(FIREBASE_STORE, `locations/${locationId}/activePlayers`);
-    const teamsRef = doc(FIREBASE_STORE, `locations/${locationId}/teams`);
-
-    // Load active players from Firestore
+  
+    // Firestore references for activePlayers and teams
+    const activePlayersRef = doc(FIREBASE_STORE, `locations/${location}/activePlayers`);
+    const teamsRef = doc(FIREBASE_STORE, `locations/${location}/teams`);
+  
+    // Subscribe to active players
     const unsubscribePlayers = onSnapshot(activePlayersRef, (docSnapshot) => {
       if (docSnapshot.exists()) {
         const playersData = docSnapshot.data();
         setActivePlayers(Object.values(playersData || {}));
       }
     });
-
-    // Load team assignments from Firestore
+  
+    // Subscribe to team assignments
     const unsubscribeTeams = onSnapshot(teamsRef, (docSnapshot) => {
       if (docSnapshot.exists()) {
         const { teamA: savedTeamA = [], teamB: savedTeamB = [] } = docSnapshot.data();
@@ -35,12 +37,12 @@ const AddScore = ({ locationId }) => {
         setTeamB(savedTeamB);
       }
     });
-
+  
     return () => {
       unsubscribePlayers();
       unsubscribeTeams();
     };
-  }, [locationId]);
+  }, [location]);  
 
   const handleTeamAssignment = async (playerId, team) => {
     if (team === 'A') {
@@ -56,17 +58,17 @@ const AddScore = ({ locationId }) => {
     }
 
     // Persist the updated teams to Firestore
-    const teamsRef = doc(FIREBASE_STORE, `locations/${locationId}/teams`);
+    const teamsRef = doc(FIREBASE_STORE, `locations/${location}/teams`);
     await setDoc(teamsRef, { teamA, teamB }, { merge: true });
   };
 
   const handleGameResult = async (winningTeam) => {
-    if (!locationId) {
-      console.error("Invalid locationId for game result: ", locationId);
+    if (!location) {
+      console.error("Invalid locationId for game result: ", location);
       return; // If locationId is undefined, exit early
     }
 
-    const currentGameRef = doc(FIREBASE_STORE, `locations/${locationId}/currentGame`);
+    const currentGameRef = doc(FIREBASE_STORE, `locations/${location}/currentGame`);
     const losingTeam = winningTeam === 'teamA' ? 'teamB' : 'teamA';
 
     // Update the game result for each team
@@ -85,20 +87,19 @@ const AddScore = ({ locationId }) => {
 
   const handleAddPlayer = async () => {
     if (!inputPlayer) return;
-
-    if (!locationId) {
-      console.error("Invalid locationId for adding player: ", locationId);
-      return; // If locationId is undefined, exit early
+  
+    if (!location) {
+      console.error("Invalid locationId for adding player: ", location);
+      return;
     }
-
-    const activePlayersRef = doc(FIREBASE_STORE, `locations/${locationId}/activePlayers`);
-    const player = { userId: inputPlayer, name: inputPlayer }; // Assuming player name and ID are the same
-
+  
+    const activePlayersRef = doc(FIREBASE_STORE, `locations/${location}/activePlayers`);
+    const player = { userId: inputPlayer, name: inputPlayer };
+  
     try {
-      // Automatically add player to Firestore
+      // Check if document exists and add the player
       const activePlayersDoc = await getDoc(activePlayersRef);
       if (activePlayersDoc.exists()) {
-        const existingPlayers = activePlayersDoc.data();
         await updateDoc(activePlayersRef, {
           [inputPlayer]: player,
         });
@@ -107,13 +108,14 @@ const AddScore = ({ locationId }) => {
           [inputPlayer]: player,
         });
       }
-
+  
       setActivePlayers((prevPlayers) => [...prevPlayers, player]);
-      setInputPlayer(''); // Clear input after adding
+      setInputPlayer(''); // Clear input
     } catch (error) {
       console.error("Error adding player:", error);
     }
   };
+  
 
   return (
     <div className="add-score-container">

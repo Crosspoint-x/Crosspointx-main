@@ -37,7 +37,7 @@ const QRCodeDisplay = () => {
 
   // Handle printing QR Code (send to company email)
   const handlePrintQRCode = async () => {
-    const companyEmail = "company@example.com"; // Replace with your company's email
+    const companyEmail = "djlist7@gmail.com"; // Replace with your company's email
     const emailData = {
       to: companyEmail,
       subject: `QR Code for User ${user?.email}`,
@@ -164,4 +164,4 @@ const QRCodeScanner = ({ locationId }) => {
 };
 
 export { QRCodeDisplay, QRCodeScanner };
-  
+    

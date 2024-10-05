@@ -20,6 +20,14 @@
   overflow: hidden;
 }
 
+.location-box:hover {
+  box-shadow: 0 2px 8px rgba(255, 255, 255, 1.0);
+}
+
+.location-box { cursor: pointer; }
+
+
+
 .logo-container img {
   width: 80px; /* Adjust logo size */
   height: auto;
