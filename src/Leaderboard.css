@@ -14,7 +14,9 @@ body {
 }
 
 .leaderboard {
-  margin: 0px;
+  background-color: #fff;
+  margin: 10px;
+  padding: 10px;
   border-radius: 25px;
 }
 
@@ -66,7 +68,7 @@ thead tr {
 
 .table tr:last-child {
   border-radius: 16px;
-  border: 1px solid #ddd;
+  border: 5px solid #ddd;
 }
 
 .table tr:hover {

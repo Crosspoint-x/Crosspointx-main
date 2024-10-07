@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { doc, updateDoc, getDoc, collection, onSnapshot } from 'firebase/firestore';
+import { doc, updateDoc, setDoc, getDoc, collection, onSnapshot } from 'firebase/firestore';
 import { FIREBASE_STORE } from './firebase'; 
 import './Leaderboard.css';
 
@@ -16,40 +16,66 @@ const calculateElo = (winnerElo, loserElo) => {
 };
 
 // Function to update Firestore with match result and Elo calculations
-const updateLeaderboardWithMatchResult = async (winnerId, loserId) => {
+export const updateLeaderboardWithMatchResult = async (playerId, opponentId, isWinner) => {
   try {
-    const winnerRef = doc(FIREBASE_STORE, 'leaderboard', winnerId);
-    const loserRef = doc(FIREBASE_STORE, 'leaderboard', loserId);
+    const playerRef = doc(FIREBASE_STORE, 'leaderboard', playerId);
+    const opponentRef = doc(FIREBASE_STORE, 'leaderboard', opponentId);
 
     // Fetch current Elo ratings for both players
-    const winnerSnap = await getDoc(winnerRef);
-    const loserSnap = await getDoc(loserRef);
+    const playerSnap = await getDoc(playerRef);
+    const opponentSnap = await getDoc(opponentRef);
 
-    if (winnerSnap.exists() && loserSnap.exists()) {
-      const winnerData = winnerSnap.data();
-      const loserData = loserSnap.data();
+    // If the player or opponent doesn't exist in leaderboard, add them with default values
+    if (!playerSnap.exists()) {
+      console.log(`Player ${playerId} not found in leaderboard, adding with default values.`);
+      await setDoc(playerRef, { wins: 0, losses: 0, elo: 1000 });
+    }
 
-      const winnerElo = winnerData.elo || 1000; // Default Elo of 1000
-      const loserElo = loserData.elo || 1000;
+    if (!opponentSnap.exists()) {
+      console.log(`Opponent ${opponentId} not found in leaderboard, adding with default values.`);
+      await setDoc(opponentRef, { wins: 0, losses: 0, elo: 1000 });
+    }
 
-      // Calculate new Elo ratings
-      const { newWinnerElo, newLoserElo } = calculateElo(winnerElo, loserElo);
+    // Fetch the updated player and opponent data
+    const updatedPlayerSnap = await getDoc(playerRef);
+    const updatedOpponentSnap = await getDoc(opponentRef);
 
-      // Update Firestore with new values
-      await updateDoc(winnerRef, {
-        wins: (winnerData.wins || 0) + 1,
+    const playerData = updatedPlayerSnap.data();
+    const opponentData = updatedOpponentSnap.data();
+
+    const playerElo = playerData.elo || 1000;
+    const opponentElo = opponentData.elo || 1000;
+
+    // Calculate new Elo ratings
+    const { newWinnerElo, newLoserElo } = calculateElo(playerElo, opponentElo);
+
+    // If this player is a winner, update their win count and Elo
+    if (isWinner) {
+      await updateDoc(playerRef, {
+        wins: (playerData.wins || 0) + 1,
         elo: newWinnerElo
       });
 
-      await updateDoc(loserRef, {
-        losses: (loserData.losses || 0) + 1,
+      // Update the opponent (loser) with their new loss count and Elo
+      await updateDoc(opponentRef, {
+        losses: (opponentData.losses || 0) + 1,
+        elo: newLoserElo
+      });
+    } else {
+      // If this player is a loser, update their loss count and Elo
+      await updateDoc(playerRef, {
+        losses: (playerData.losses || 0) + 1,
         elo: newLoserElo
       });
 
-      console.log(`Elo ratings updated! Winner: ${newWinnerElo}, Loser: ${newLoserElo}`);
-    } else {
-      console.error('One or both players not found in leaderboard.');
+      // Update the opponent (winner) with their new win count and Elo
+      await updateDoc(opponentRef, {
+        wins: (opponentData.wins || 0) + 1,
+        elo: newWinnerElo
+      });
     }
+
+    console.log(`Elo ratings updated! Player: ${newWinnerElo}, Opponent: ${newLoserElo}`);
   } catch (error) {
     console.error('Error updating leaderboard:', error);
   }

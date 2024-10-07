@@ -188,4 +188,3 @@ function InsideLayout({ user }) {
     </div>
   );
 }
-

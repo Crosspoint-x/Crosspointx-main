@@ -82,3 +82,12 @@
   margin-right: 10px;
 }
 
+.css-1bjk3jo-MuiButtonBase-root-MuiBottomNavigationAction-root:hover {
+ background-color: #007bff;
+ color: #FFFFFF;
+}
+
+.css-1bjk3jo-MuiButtonBase-root-MuiBottomNavigationAction-root:focus:hover {
+  background-color: #0f68ac;
+  color: #FFF;
+ }

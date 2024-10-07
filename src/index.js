@@ -1,12 +1,12 @@
-import React from 'react'; // Import React to use JSX
-import ReactDOM from 'react-dom'; // Import ReactDOM to render the app
-import App from './App'; // Import the main App component
-import './index.css'; // Import any necessary CSS files
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
 
-// Render the App wrapped in the Router
-ReactDOM.render(
+// Create a root using React 18's createRoot API
+const root = ReactDOM.createRoot(document.getElementById('root'));
+
+root.render(
   <React.StrictMode>
-          <App />
-     </React.StrictMode>,
-  document.getElementById('root')
+    <App />
+  </React.StrictMode>
 );
