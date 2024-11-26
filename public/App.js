@@ -3,24 +3,21 @@ import { loadStripe } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
 import { BrowserRouter as Router, Route, Routes, Navigate, useNavigate } from 'react-router-dom';
 import { onAuthStateChanged } from "firebase/auth";
-import { BottomNavigation, BottomNavigationAction, Popper, Paper, MenuItem } from '@mui/material';
+import { BottomNavigation, BottomNavigationAction } from '@mui/material';
 import SatelliteAltIcon from '@mui/icons-material/SatelliteAlt';
 import QrCodeIcon from '@mui/icons-material/QrCode';
-import CrosspointxLogo from './assets/Crosspointx.svg';
 import LeaderboardIcon from '@mui/icons-material/Leaderboard';      
 import IconButton from "@mui/material/IconButton";
 import LogoutIcon from "@mui/icons-material/Logout";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import PersonIcon from '@mui/icons-material/Person';
 import Login from './Login';
 import SignUp from "./SignUp";
-import QRCodeScannerComponent from './QRCodeScanner';
+import { QRCodeDisplay, QRCodeScanner } from './QRCodeDisplay';
 import Leaderboard from './Leaderboard'; 
 import './App.css';
 import LiveSessions from './LiveSessions';
-import MatchEntry from './MatchEntry';
+import AddScore from './AddScore';
 import { getDoc, doc } from 'firebase/firestore';
-import UserFlyout from "./UserFlyout";
 import { FIREBASE_STORE, FIREBASE_AUTH } from './firebase';
 
 const stripePromise = loadStripe('pk_test_51Ow7goA466XWtdBiQakYrdadPmlpib7w6yeXTIxqo7enudMMl2Y5uEdGRGlmTOsChS5Jl0M1nkTiuCEbUZ8CgfTL00Y1tOYYMu');
@@ -77,11 +74,12 @@ function ProtectedRefRoute({ children, user }) {
   return children; // Render children if user is a referee
 }
 
+
 // Main App component
 export default function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [isReferee, setIsReferee] = useState(false);
+  const [isReferee, setIsReferee] = useState(false); // Add state to track referee status
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, (user) => {
@@ -89,6 +87,7 @@ export default function App() {
       setUser(user);
       setLoading(false);
     });
+
     return () => unsubscribe();
   }, []);
 
@@ -101,7 +100,7 @@ export default function App() {
       <Router>
         <Elements stripe={stripePromise}>
           <Routes>
-            <Route path="/Login" element={<Login setIsReferee={setIsReferee} />} />
+            <Route path="/Login" element={<Login setIsReferee={setIsReferee} />} /> {/* Pass setIsReferee */}
             <Route path="/SignUp" element={<SignUp />} />
             <Route 
               path="*" 
@@ -115,17 +114,14 @@ export default function App() {
   );
 }
 
-
-// InsideLayout component
+// InsideLayout component for nested routes and bottom navigation
 function InsideLayout({ user }) {
-  const [value, setValue] = useState('/LiveSessions');
-  const [flyoutOpen, setFlyoutOpen] = useState(false);
-  const [anchorEl, setAnchorEl] = useState(null);
+  const [value, setValue] = useState('/LiveSessions'); // Set the initial state to the first page
   const navigate = useNavigate();
 
   const handleNavigationChange = (event, newValue) => {
     setValue(newValue);
-    navigate(newValue);
+    navigate(newValue); // Navigate to the selected route
   };
 
   const handleLogout = () => {
@@ -137,21 +133,18 @@ function InsideLayout({ user }) {
   };
 
   const handleBack = () => {
-    navigate(-1);
-  };
-
-  const toggleFlyout = (event) => {
-    setAnchorEl(event.currentTarget);
-    setFlyoutOpen((prev) => !prev);
+    navigate(-1); // Go back to the previous page
   };
 
   useEffect(() => {
+    // Update the selected value based on the current path
     const currentPath = window.location.pathname;
     setValue(currentPath);
-  }, [user]);
+  }, [user]); // Trigger the effect when user changes
 
   return (
     <div className="InsideLayout">
+      {/* Back and Logout buttons */}
       <div className="Back">
         <IconButton onClick={handleBack}>
           <ArrowBackIcon />
@@ -162,31 +155,19 @@ function InsideLayout({ user }) {
           <LogoutIcon />
         </IconButton>
       </div>
-      <div className="UserButton">
-        <IconButton onClick={toggleFlyout}>
-          <PersonIcon className="PersonIcon" />
-        </IconButton>
-        {/* UserFlyout component */}
-        <UserFlyout
-  anchorEl={anchorEl}
-  open={flyoutOpen}
-  onClose={() => setFlyoutOpen(false)}
-  user={{
-    id: "A-56",
-    name: "Player Name",
-    photoURL: "https://example.com/profile.jpg",
-  }}
-/>
-      </div>
+
+      {/* Routes for rendering actual components */}
       <div className="content">
         <Routes>
           <Route path="/LiveSessions" element={<LiveSessions />} />
           <Route path="/Leaderboard" element={<Leaderboard />} /> 
-          <Route path="/qr-code" element={<QRCodeScannerComponent />} />
-          <Route path="/match-entry" element={<MatchEntry />} />
+          <Route path="/qr-code" element={<QRCodeDisplay />} />
+          <Route path="/add-score" element={<AddScore />} 
+          />
         </Routes>
       </div>
 
+      {/* Bottom Navigation Bar */}
       <BottomNavigation
         value={value}
         onChange={handleNavigationChange}
@@ -202,7 +183,7 @@ function InsideLayout({ user }) {
         <BottomNavigationAction label="LiveSessions" value="/LiveSessions" icon={<SatelliteAltIcon />} />
         <BottomNavigationAction label="Leaderboard" value="/Leaderboard" icon={<LeaderboardIcon />} />
         <BottomNavigationAction label="QR Code" value="/qr-code" icon={<QrCodeIcon />} />
-        <BottomNavigationAction label="Match Entry" value="/match-entry" icon={<QrCodeIcon />} />
+        <BottomNavigationAction label="Add Score" value="/add-score" icon={<QrCodeIcon />} />
       </BottomNavigation>
     </div>
   );

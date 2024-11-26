@@ -1,18 +1,37 @@
 import React, { useState } from 'react';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { FIREBASE_AUTH, FIREBASE_APP, FIREBASE_STORE } from './firebase'; 
-import { loadStripe } from '@stripe/stripe-js'; 
+import { FIREBASE_AUTH, FIREBASE_APP, FIREBASE_STORE } from './firebase';
+import { loadStripe } from '@stripe/stripe-js';
 import { getStripePayments } from '@invertase/firestore-stripe-payments';
-import { collection, doc, setDoc, addDoc, onSnapshot } from "firebase/firestore"; 
-import { useNavigate } from 'react-router-dom'; 
-import IconButton from "@mui/material/IconButton"; 
+import { collection, doc, setDoc, addDoc, onSnapshot } from "firebase/firestore";
+import { useNavigate } from 'react-router-dom';
+import IconButton from "@mui/material/IconButton";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import CrosspointxLogo from './assets/Crosspointx.svg'; 
-import './SignUp.css';   
+import CrosspointxLogo from './assets/Crosspointx.svg';
+import { FIREBASE_STORAGE } from './firebase'; // Import your Firebase storage instance
+import { ref, uploadString, getDownloadURL } from 'firebase/storage';
+import { QRCodeCanvas } from 'qrcode.react'; // Updated import for QRCodeCanvas
+import './SignUp.css';
+import { signInAnonymously, linkWithCredential, EmailAuthProvider } from 'firebase/auth'; // Import necessary Firebase methods
 
 const refID = '8155180126';
 const refPass = '786592';
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLIC_KEY || 'pk_live_51Ow7goA466XWtdBifnrLrOBoMOu6VGECzCQMuMvB5faDbWBClqqQHRMoF1aXEPQVQiDX17j3gbtBtU2wmjdl7rPd002dR4kDFT');
+
+const subscriptionCost = 5.99; // Define the cost of subscription
+const taxRate = 0.07; // Define the tax rate
+const totalCost = (subscriptionCost * (1 + taxRate)).toFixed(2); // Calculate total cost
+
+
+function userCode(uid) {
+  const userID = FIREBASE_AUTH(user.uid)
+  
+  const codeLetter = String.fromCharCode((userID.charCodeAt(0) % 26) + 65);
+  const codeNumOne = (uid.charCodeAt(1) % 10);
+  const codeNumTwo = (uid.charCodeAt(2) % 10);
+
+  const codeFinal = '${codeLetter}${codeNumOne}${codeNumTwo}';
+}
 
 const payments = getStripePayments(FIREBASE_APP, {
   firestore: FIREBASE_STORE,
@@ -25,44 +44,58 @@ const SignUp = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);          
   const [redirecting, setRedirecting] = useState(false);
-  const navigate = useNavigate(); // For back button functionality
+  const navigate = useNavigate();
 
-  // Subscription details
-  const subscriptionCost = 5.99;
-  const taxRate = 0.07;
-  const totalCost = (subscriptionCost * (1 + taxRate)).toFixed(2);
-
-  // Handle form submission and payment
   const handleSignUp = async (event) => {
     event.preventDefault();
     setLoading(true);
     setError(null);
 
     try {
-      const userCredential = await createUserWithEmailAndPassword(FIREBASE_AUTH, email, password);
-      const user = userCredential.user;
+      const anonUser = await signInAnonymously(FIREBASE_AUTH);
 
-      const checkoutSessionsCollection = collection(FIREBASE_STORE, "customers", user.uid, "checkout_sessions");
+      const checkoutSessionsCollection = collection(FIREBASE_STORE, "customers", anonUser.user.uid, "checkout_sessions");
 
       const docRef = await addDoc(checkoutSessionsCollection, {
-        price: "price_1Q3HpvA466XWtdBipaKVaTaV",
+        price: "price_1Q3HpvA466XWtdBipaKVaTaV", 
         success_url: `${window.location.origin}/payments/success`,
         cancel_url: `${window.location.origin}/payments/cancel`,
       });
 
-      const unsubscribe = onSnapshot(docRef, (snap) => {
-        const { error, url } = snap.data();
+      const unsubscribe = onSnapshot(docRef, async (snap) => {
+        const { error, url, payment_status } = snap.data();
         if (error) {
-          alert(`An error occurred: ${error.message}`);
+          setError(`An error occurred: ${error.message}`);
           setLoading(false);
         }
+
         if (url) {
           setRedirecting(true);
           window.location.assign(url);
         }
-      });
 
+        if (payment_status === 'paid') {
+          try {
+            const credential = EmailAuthProvider.credential(email, password);
+            await linkWithCredential(anonUser.user, credential);
+
+            await setDoc(doc(FIREBASE_STORE, 'users', anonUser.user.uid), {
+              email: email,
+              createdAt: new Date(),
+            });
+
+            // Generate and store the QR code after payment success and account creation
+            await generateAndStoreQRCode(anonUser.user.uid, email);
+
+            console.log('User account created successfully after payment.');
+            navigate('/qrcode');
+          } catch (error) {
+            setError('Error creating account. Please try again.');
+          }
+        }
+      });
     } catch (error) {
       setError(`Error during sign-up or payment: ${error.message}`);
     } finally {
@@ -70,18 +103,24 @@ const SignUp = () => {
     }
   };
 
-  const handleRefSignup = async () => {
-    try {
-      // Create a "ref" user in the Firestore database, no need to create an auth user
-      await setDoc(doc(FIREBASE_STORE, 'ref_users', refID), {
-        email: `${refID}@ref.com`,
-        isReferee: true,
-        refID: refID,
-      });
 
-      console.log(`Ref signup successful for refID: ${refID}`);
+  const generateAndStoreQRCode = async (userId, userEmail) => {
+    try {
+      const qrCodeData = `User ID: ${userId}\nEmail: ${userEmail}`;
+      const storageRef = ref(FIREBASE_STORAGE, `qrCodes/${userId}.svg`);
+      
+      // Generate SVG data
+      const qrCodeSVGElement = <QRCodeCanvas value={qrCodeData} size={200} />;
+      const xml = new XMLSerializer().serializeToString(qrCodeSVGElement);
+      const svg64 = btoa(xml);
+      const qrCodeDataURL = `data:image/svg+xml;base64,${svg64}`;
+
+      await uploadString(storageRef, qrCodeDataURL, 'data_url');
+      const downloadURL = await getDownloadURL(storageRef);
+
+      await setDoc(doc(FIREBASE_STORE, 'users', userId), { qrCodeURL: downloadURL }, { merge: true });
     } catch (error) {
-      console.error("Error during ref sign-up: ", error);
+      setError('Failed to generate QR code. Please try again later.');
     }
   };
 
@@ -134,19 +173,28 @@ const SignUp = () => {
           <p><strong>Total: ${totalCost}</strong></p>
         </div>
 
-        {/* Error Display */}
-        {error && <div className="error-message" style={{ color: 'red' }}>{error}</div>}
+  {/* Error Display */}
+  {error && <div className="error-message" style={{ color: 'red' }}>{error}</div>}
+
 
         {/* Loading Indicator for Redirect */}
         {redirecting && <div className="loading-message">Redirecting to payment...</div>}
 
         {/* Submit Button */}
         <button type="submit" disabled={loading || redirecting}>
-          {loading ? 'Processing...' : `Sign Up & Pay $${totalCost}`}
+          {loading ? 'Processing...' : 'Sign Up & Pay'}
         </button>
       </form>
+
+      {/* Show QR code after payment success */}
+      {paymentSuccess && (
+        <div className="qr-code-container">
+          <h3>Your Account QR Code</h3>
+          <QRCodeCanvas value={email} size={200} />
+        </div>
+      )}
     </div>
   );
 };
 
-export default SignUp;
+export default {SignUp, userCode};

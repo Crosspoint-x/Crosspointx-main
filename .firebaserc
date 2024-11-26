@@ -1,0 +1,22 @@
+{
+  "projects": {
+    "default": "crosspointx-8ed76"
+  },
+  "targets": {},
+  "etags": {
+    "crosspointx-8ed76": {
+      "extensionInstances": {
+        "calculate-rates": "95947a4a81baf25043afe3e9e3bce461bf12be2e97166beb3706b201affb641c",
+        "firestore-stripe-payments-d50n": "07a6292dd152f51ed6820b389bbe85ebafc874e40a349716bc05cedabae2ea71",
+        "firestore-validate-address": "6a81d04b75d034d0aeaafcf4a2ff0881028251e5e882f46f0b72e601f3417a02",
+        "purchase-labels": "317826c231083fd79fbc805776ac4d40314ace46a854d15d40bb82a3a2f298ef",
+        "track-labels": "ed792d79b59211d197253a6d02ccb59739b0838a94b09d67945794b8b1c05088"
+      }
+    }
+  },
+  "dataconnectEmulatorConfig": {
+    "postgres": {
+      "localConnectionString": "postgresql://localhost:5432?sslmode=disable"
+    }
+  }
+}

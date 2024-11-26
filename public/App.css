@@ -30,6 +30,21 @@
   font-size: 16px;
 }
 
+.CPXLogo {
+  position: fixed;
+  top: 10px; /* Adjust as needed */
+  left: 10px; /* Adjust as needed */
+  border-radius: 50%; /* Ensures it is circular */
+  overflow: hidden; /* Ensures circular shape for non-square logos */
+  z-index: 1001; /* Stays above other elements */
+}
+
+.CPXLogo img {
+  width: 100%; /* Ensures logo fits inside the avatar */
+  height: auto;
+}
+
+
 .add-score-form button {
   background-color: #4CAF50;
   color: white;
@@ -65,46 +80,8 @@
   color:darkred;
 }
 
-.UserButton {
-  position: fixed;
-  background-color: #ddd;
-  border-radius: 50%;
-  margin: 5px 0px 0px 5px;
-  width: 50px;
-  height: 50px;
-  top: 0;
-  left: 0;
-  display: flex;
-  justify-content: left;
-  padding: 0px 0px 0px 0px;
-  z-index: 1000;
-  color:darkred;
-}
-
-.UserButton:active {
-  background-color: #fff;
-}
-
-.PersonIcon {   
-  font-size: 300px;
-}
-
 /* Style for Back button */
 .Back {
-  position: fixed;
-  top: 0;
-  right: 0;
-  display: flex;
-  justify-content: right;
-  padding: 10px;
-  z-index: 1000;
-  color:darkred;
-}
-
-.UserFlyout {
-  background-color: #fff;
-  border-radius: 20px;
-  border: 2px #4CAF50;
   position: fixed;
   top: 0;
   left: 0;
