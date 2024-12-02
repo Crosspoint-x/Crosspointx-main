@@ -83,16 +83,18 @@ export const updateLeaderboardWithMatchResult = async (playerId, opponentId, isW
 
 const Leaderboard = () => {
   const [scores, setScores] = useState([]);
+  const [activeScores, setActiveScores] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onSnapshot(
+    const leaderboardUnsub = onSnapshot(
       collection(FIREBASE_STORE, 'leaderboard'),
       (snapshot) => {
         const scoreList = snapshot.docs.map(doc => ({
           id: doc.id,
-          ...doc.data(), // Get player data from Firestore
+          ...doc.data(),
         }));
+        scoreList.sort((a, b) => b.wins - a.wins || b.elo - a.elo); // Sort by wins, then Elo
         setScores(scoreList);
         setLoading(false);
       },
@@ -101,53 +103,69 @@ const Leaderboard = () => {
       }
     );
 
-    // Clean up the subscription when the component unmounts
-    return () => unsubscribe();
-  }, []);
+    const activePlayersUnsub = onSnapshot(
+      collection(FIREBASE_STORE, 'locations/OrlandoPaintball/activePlayers'),
+      (snapshot) => {
+        const activePlayerIds = snapshot.docs.map(doc => doc.id);
+        setActiveScores(scores.filter(score => activePlayerIds.includes(score.id)));
+      }
+    );
+
+    return () => {
+      leaderboardUnsub();
+      activePlayersUnsub();
+    };
+  }, [scores]);
 
   if (loading) {
     return <div>Loading...</div>;
   }
 
+  const renderTable = (data, title) => (
+    <>
+      <h2>{title}</h2>
+      <table className="table">
+        <thead>
+          <tr>
+            <th>Player</th>
+            <th>Wins</th>
+            <th>Losses</th>
+            <th>W/L Ratio</th>
+            <th>Elo Rating</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.length > 0 ? (
+            data.map(score => {
+              const wins = score.wins || 0;
+              const losses = score.losses || 0;
+              const ratio = losses === 0 ? (wins > 0 ? 'Infinity' : 'N/A') : (wins / losses).toFixed(2);
+
+              return (
+                <tr key={score.id}>
+                  <td>{score.id}</td>
+                  <td>{wins}</td>
+                  <td>{losses}</td>
+                  <td>{ratio}</td>
+                  <td>{score.elo || 'N/A'}</td>
+                </tr>
+              );
+            })
+          ) : (
+            <tr>
+              <td colSpan="5">No data available</td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </>
+  );
+
   return (
     <div className="container">
       <h1>Leaderboard</h1>
-      <div className='leaderboard'>
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Player</th>
-              <th>Wins</th>
-              <th>Losses</th>
-              <th>W/L Ratio</th> {/* Added W/L Ratio column */}
-              <th>Elo Rating</th>
-            </tr>
-          </thead>
-          <tbody>
-            {scores.length > 0 ? (
-              scores.map(score => {
-                const wins = score.wins || 0; // Fetch wins from Firestore
-                const losses = score.losses || 0; // Fetch losses from Firestore
-                const ratio = losses === 0 ? (wins > 0 ? 'Infinity' : 'N/A') : (wins / losses).toFixed(2); // W/L Ratio calculation
-
-                return (
-                  <tr key={score.id}>
-                    <td>{score.id}</td>
-                    <td>{wins}</td>
-                    <td>{losses}</td>
-                    <td>{ratio}</td> {/* Display W/L Ratio */}
-                    <td>{score.elo !== undefined ? score.elo : 'N/A'}</td>
-                  </tr>
-                );
-              })
-            ) : (
-              <tr>
-                <td colSpan="5">No scores available</td> {/* Adjusted colspan to 5 for W/L Ratio */}
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      {renderTable(scores, "Overall Leaderboard")}
+      {renderTable(activeScores, "Active Users Leaderboard")}
     </div>
   );
 };
