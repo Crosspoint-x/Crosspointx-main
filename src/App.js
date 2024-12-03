@@ -12,15 +12,15 @@ import IconButton from "@mui/material/IconButton";
 import LogoutIcon from "@mui/icons-material/Logout";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import PersonIcon from '@mui/icons-material/Person';
-import Login from './Login';
-import SignUp from "./SignUp";
-import QRCodeScannerComponent from './QRCodeScanner';
-import Leaderboard from './Leaderboard'; 
+import Login from './authentication/Login';
+import SignUp from './authentication/SignUp';
+import QRCodeScannerComponent from './referee/QRCodeScanner';
+import Leaderboard from './leaderboard/Leaderboard'; 
 import './App.css';
-import LiveSessions from './LiveSessions';
-import MatchEntry from './MatchEntry';
+import LiveSessions from './leaderboard/LiveSessions';
+import MatchEntry from './referee/MatchEntry';
 import { getDoc, doc } from 'firebase/firestore';
-import UserFlyout from "./UserFlyout";
+import UserFlyout from "./main/UserFlyout";
 import { FIREBASE_STORE, FIREBASE_AUTH } from './firebase';
 
 const stripePromise = loadStripe('pk_test_51Ow7goA466XWtdBiQakYrdadPmlpib7w6yeXTIxqo7enudMMl2Y5uEdGRGlmTOsChS5Jl0M1nkTiuCEbUZ8CgfTL00Y1tOYYMu');
@@ -81,7 +81,6 @@ function ProtectedRefRoute({ children, user }) {
 export default function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [isReferee, setIsReferee] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, (user) => {
@@ -101,7 +100,7 @@ export default function App() {
       <Router>
         <Elements stripe={stripePromise}>
           <Routes>
-            <Route path="/Login" element={<Login setIsReferee={setIsReferee} />} />
+            <Route path="/Login" element={<Login />} />
             <Route path="/SignUp" element={<SignUp />} />
             <Route 
               path="*" 
@@ -115,13 +114,40 @@ export default function App() {
   );
 }
 
+function userCode(uid) {
+  const codeLetter = String.fromCharCode((uid.charCodeAt(0) % 26) + 65);
+  const codeNumOne = uid.charCodeAt(1) % 10;
+  const codeNumTwo = uid.charCodeAt(2) % 10;
+  const codeNumThree = uid.charCodeAt(3) % 10;
+
+  return `${codeLetter}${codeNumOne}${codeNumTwo}${codeNumThree}`;
+}
 
 // InsideLayout component
 function InsideLayout({ user }) {
   const [value, setValue] = useState('/LiveSessions');
   const [flyoutOpen, setFlyoutOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [profilePic, setProfilePic] = useState(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (user) {
+        try {
+          const userDoc = await getDoc(doc(FIREBASE_STORE, 'users', user.uid));
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            setProfilePic(userData.photoURL || "https://example.com/default-profile.jpg");
+          }
+        } catch (error) {
+          console.error("Error fetching user profile:", error);
+        }
+      }
+    };
+
+    fetchUserProfile();
+  }, [user]);
 
   const handleNavigationChange = (event, newValue) => {
     setValue(newValue);
@@ -145,11 +171,6 @@ function InsideLayout({ user }) {
     setFlyoutOpen((prev) => !prev);
   };
 
-  useEffect(() => {
-    const currentPath = window.location.pathname;
-    setValue(currentPath);
-  }, [user]);
-
   return (
     <div className="InsideLayout">
       <div className="Back">
@@ -168,15 +189,14 @@ function InsideLayout({ user }) {
         </IconButton>
         {/* UserFlyout component */}
         <UserFlyout
-  anchorEl={anchorEl}
-  open={flyoutOpen}
-  onClose={() => setFlyoutOpen(false)}
-  user={{
-    id: "A-56",
-    name: "Player Name",
-    photoURL: "https://example.com/profile.jpg",
-  }}
-/>
+          anchorEl={anchorEl}
+          open={flyoutOpen}
+          onClose={() => setFlyoutOpen(false)}
+          user={{
+            id: userCode(user.uid),
+            photoURL: profilePic,
+          }}
+        />
       </div>
       <div className="content">
         <Routes>

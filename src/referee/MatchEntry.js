@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { doc, setDoc, getDoc, onSnapshot, updateDoc, collection, deleteDoc } from 'firebase/firestore';
-import { FIREBASE_STORE } from './firebase';
-import { updateLeaderboardWithMatchResult } from './Leaderboard';
+import { FIREBASE_STORE } from '../firebase';
+import { updateLeaderboardWithMatchResult } from '../leaderboard/Leaderboard';
 import './MatchEntry.css';
 
 const MatchEntry = ({ locationId = 'OrlandoPaintball' }) => {

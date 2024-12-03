@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useNavigate, Link } from 'react-router-dom';
-import { FIREBASE_AUTH } from './firebase'; 
+import { FIREBASE_AUTH } from '../firebase'; 
 import { getFunctions, httpsCallable } from 'firebase/functions'; // Import Firebase Functions
-import CrosspointxLogo from './assets/Crosspointx.svg';
+import CrosspointxLogo from '../assets/Crosspointx.svg';
 import './Login.css';
 import { FaDiscord, FaInstagram, FaTiktok, FaEnvelope } from 'react-icons/fa'; // Icons
 

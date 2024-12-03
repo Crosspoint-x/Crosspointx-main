@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
-import { FIREBASE_STORE, FIREBASE_AUTH } from './firebase';
+import { FIREBASE_STORE, FIREBASE_AUTH } from '../firebase';
 import { QrReader } from '@blackbox-vision/react-qr-reader'; // Import a QR code scanner library
 import './QRCodeScanner.css';
 
