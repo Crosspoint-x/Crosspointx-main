@@ -1,4 +1,6 @@
-module.exports = {
+import { defineConfig } from "eslint-define-config";
+
+export default defineConfig({
   root: true,
   env: {
     es6: true,
@@ -30,4 +32,4 @@ module.exports = {
     "import/no-unresolved": 0,
     "indent": ["error", 2],
   },
-};
+});
