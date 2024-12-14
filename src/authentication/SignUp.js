@@ -24,7 +24,7 @@ function userCode(uid) {
 // Configuration Constants
 const refID = '8155180126';
 const refPass = '786592';
-const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLIC_KEY || 'your_public_key_here');
+const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLIC_KEY || 'pk_test_51Ow7goA466XWtdBiQakYrdadPmlpib7w6yeXTIxqo7enudMMl2Y5uEdGRGlmTOsChS5Jl0M1nkTiuCEbUZ8CgfTL00Y1tOYYMu');
 const payments = getStripePayments(FIREBASE_APP, {
   firestore: FIREBASE_STORE,
   productsCollection: "products",
@@ -64,7 +64,7 @@ const SignUp = () => {
       // Create Stripe checkout session
       const checkoutSessionsRef = collection(FIREBASE_STORE, "customers", anonUser.user.uid, "checkout_sessions");
       const docRef = await addDoc(checkoutSessionsRef, {
-        price: "price_1Q3HpvA466XWtdBipaKVaTaV", // Replace with your Stripe price ID
+        price: "price_1P7xXnA466XWtdBiNuU68sxI", // Replace with your Stripe price ID
         success_url: `${window.location.origin}/payments/success`,
         cancel_url: `${window.location.origin}/payments/cancel`,
       });
