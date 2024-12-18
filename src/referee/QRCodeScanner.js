@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { FIREBASE_STORE, FIREBASE_AUTH } from '../firebase';
-import { QrReader } from '@blackbox-vision/react-qr-reader'; // Import a QR code scanner library
+import { Scanner } from '@yudiel/react-qr-scanner'; // Import a QR code scanner library
 import './QRCodeScanner.css';
 
 const QRCodeScannerComponent = ({ locationId }) => {
@@ -55,8 +55,10 @@ const QRCodeScannerComponent = ({ locationId }) => {
   return (
     <div className="qr-scanner-container">
       <h2>Scan a Player's QR Code</h2>
-      <QrReader
-        onResult={(result) => result?.text && handleScan(result.text)}
+      <Scanner
+        // FIXME: Can scan multiple QR Codes at once if they are all in the camera at once which would end up breaking
+        //        this. Should iterate over every object in the arrea and handle the scan on each.
+        onScan={(result) => result[0]?.rawValue && handleScan(result[0].rawValue)}
         onError={handleError}
         style={{ 
           width: '100%', 
