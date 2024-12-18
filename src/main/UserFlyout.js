@@ -186,7 +186,7 @@ function UserFlyout({ anchorEl, open, onClose, user, onUpdatePfp }) {
               Personal Stats
             </Typography>
             <Grid container spacing={1}>
-              {Object.entries(playerStats).map(([key, value]) => (
+              {playerStats && Object.entries(playerStats).map(([key, value]) => (
                 <Grid container item xs={12} key={key}>
                   <Grid item xs={6}>
                     <Typography variant="body2" color="textSecondary">
