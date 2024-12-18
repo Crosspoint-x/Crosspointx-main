@@ -35,7 +35,7 @@ const Login = ({ setIsReferee }) => {
         emailToUse = `${refereeID}@ref.com`;
         passwordToUse = refereePass;
         
-        setIsReferee(true);
+        setIsRefereeLogin(true);
 
         // Login the referee
         const userCredential = await signInWithEmailAndPassword(FIREBASE_AUTH, emailToUse, passwordToUse);
@@ -48,7 +48,7 @@ const Login = ({ setIsReferee }) => {
         // Navigate to the Leaderboard after setting the claim
         navigate('/Leaderboard');
       } else {
-        setIsReferee(false);
+        setIsRefereeLogin(false);
 
         // Regular user login
         const userCredential = await signInWithEmailAndPassword(FIREBASE_AUTH, emailToUse, passwordToUse);
