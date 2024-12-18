@@ -33,11 +33,7 @@
       "firebase.json",
       "**/.*",
       "**/node_modules/**"
-<<<<<<< HEAD
     ]
-=======
-    ],
->>>>>>> b5d8844451097f333b6d4bf4944f92ba39dabb8e
   },
   "storage": {
     "rules": "storage.rules"
