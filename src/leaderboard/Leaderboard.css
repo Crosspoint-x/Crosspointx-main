@@ -1,5 +1,5 @@
 body {
-  font-family: 'Ubuntu';
+  font-family: "Ubuntu";
   background-color: #f0f0f5;
 }
 
@@ -37,7 +37,8 @@ body {
   margin-bottom: 10px;
 }
 
-.table th, .table td {
+.table th,
+.table td {
   padding: 12px; /* Consistent padding for table cells */
   border: 1px solid #ddd; /* Light border for table cells */
   border-collapse: collapse;

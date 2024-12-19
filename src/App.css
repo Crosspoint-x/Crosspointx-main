@@ -31,7 +31,7 @@
 }
 
 .add-score-form button {
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
   border: none;
   padding: 10px;
@@ -62,7 +62,7 @@
   justify-content: left;
   padding: 10px;
   z-index: 1000;
-  color:darkred;
+  color: darkred;
 }
 
 .UserButton {
@@ -78,14 +78,14 @@
   justify-content: left;
   padding: 0px 0px 0px 0px;
   z-index: 1000;
-  color:darkred;
+  color: darkred;
 }
 
 .UserButton:active {
   background-color: #fff;
 }
 
-.PersonIcon {   
+.PersonIcon {
   font-size: 300px;
 }
 
@@ -98,13 +98,13 @@
   justify-content: right;
   padding: 10px;
   z-index: 1000;
-  color:darkred;
+  color: darkred;
 }
 
 .UserFlyout {
   background-color: #fff;
   border-radius: 20px;
-  border: 2px #4CAF50;
+  border: 2px #4caf50;
   position: fixed;
   top: 0;
   left: 0;
@@ -112,7 +112,7 @@
   justify-content: right;
   padding: 10px;
   z-index: 1000;
-  color:darkred;
+  color: darkred;
 }
 
 /* Style for Logout button */
@@ -121,11 +121,11 @@
 }
 
 .css-1bjk3jo-MuiButtonBase-root-MuiBottomNavigationAction-root:hover {
- background-color: #007bff;
- color: #FFFFFF;
+  background-color: #007bff;
+  color: #ffffff;
 }
 
 .css-1bjk3jo-MuiButtonBase-root-MuiBottomNavigationAction-root:focus:hover {
   background-color: #0f68ac;
-  color: #FFF;
- }
+  color: #fff;
+}
