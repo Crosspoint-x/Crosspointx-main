@@ -17,7 +17,7 @@
     "@yudiel/react-qr-scanner": "^2.1.0",
     "axios": "^1.7.9",
     "emailjs-com": "^3.2.0",
-    "firebase": "^10.14.1",
+    "firebase": "^11.1.0",
     "install": "^0.13.0",
     "npm": "^10.9.2",
     "qrcode": "^1.5.4",
