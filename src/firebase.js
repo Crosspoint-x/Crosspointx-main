@@ -16,7 +16,7 @@ const firebaseConfig = {
   storageBucket: "crosspointx-8ed76.appspot.com",
   messagingSenderId: "487616820799",
   appId: "1:487616820799:web:3b3e778f52c3cbcfce2a8a",
-  measurementId: "G-NQ8KP37E8Q"
+  measurementId: "G-NQ8KP37E8Q",
 };
 
 const FIREBASE_APP = initializeApp(firebaseConfig);
@@ -31,4 +31,10 @@ isSupported().then((supported) => {
   }
 });
 
-export { FIREBASE_APP, FIREBASE_AUTH, FIREBASE_STORE, FIREBASE_STORAGE, FIREBASE_ANALYTICS };
+export {
+  FIREBASE_APP,
+  FIREBASE_AUTH,
+  FIREBASE_STORE,
+  FIREBASE_STORAGE,
+  FIREBASE_ANALYTICS,
+};

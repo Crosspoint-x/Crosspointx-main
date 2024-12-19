@@ -21,13 +21,12 @@
 }
 
 .location-box:hover {
-  
-  box-shadow: 0 2px 8px rgba(255, 255, 255, 1.0);
+  box-shadow: 0 2px 8px rgba(255, 255, 255, 1);
 }
 
-.location-box { cursor: pointer; }
-
-
+.location-box {
+  cursor: pointer;
+}
 
 .logo-container img {
   width: 80px; /* Adjust logo size */
@@ -64,7 +63,7 @@
 
 .unverified:hover {
   background-color: #777;
-  color: #FFF;
+  color: #fff;
   border-color: #777;
 }
 
@@ -74,7 +73,7 @@
 }
 
 .verified:hover {
-  background-color: #d4af37; 
+  background-color: #d4af37;
   color: #fff; /* Gold color for verified */
   border-color: #d4af37;
 }

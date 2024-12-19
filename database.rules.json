@@ -2,13 +2,13 @@
   "rules": {
     "players": {
       ".read": "true",
-      ".write": "false",
+      ".write": "false"
     },
     "users": {
       ".read": "true",
       ".write": "false"
     },
-		"user": {
+    "user": {
       ".read": "true",
       ".write": "false"
     }

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { FIREBASE_STORE } from "../firebase"; // Firestore configuration import
 import { doc, collection, getDoc, onSnapshot } from "firebase/firestore"; // Firestore imports
-import './LiveSessions.css'; // CSS file
-import OrlandoPB from '../assets/orlandopb.png';
+import "./LiveSessions.css"; // CSS file
+import OrlandoPB from "../assets/orlandopb.png";
 
 export default function LiveSessions() {
   const [activeUsers, setActiveUsers] = useState(0);
@@ -14,9 +14,9 @@ export default function LiveSessions() {
 
   useEffect(() => {
     // Firestore references for documents
-    const activeUsersRef = doc(FIREBASE_STORE, 'stats/activeUsers');
-    const hitOutdoorRef = doc(FIREBASE_STORE, 'stats/hitOutdoor');
-    const hitIndoorRef = doc(FIREBASE_STORE, 'stats/hitIndoor');
+    const activeUsersRef = doc(FIREBASE_STORE, "stats/activeUsers");
+    const hitOutdoorRef = doc(FIREBASE_STORE, "stats/hitOutdoor");
+    const hitIndoorRef = doc(FIREBASE_STORE, "stats/hitIndoor");
 
     // Use Firestore's onSnapshot to listen for live updates
     const unsubscribeActive = onSnapshot(activeUsersRef, (docSnapshot) => {
@@ -46,18 +46,24 @@ export default function LiveSessions() {
 
   // Fetch active games for the selected location
   const fetchActiveGames = (location) => {
-    const activeGamesRef = collection(FIREBASE_STORE, `locations/${location}/activeGames`);
+    const activeGamesRef = collection(
+      FIREBASE_STORE,
+      `locations/${location}/activeGames`,
+    );
     onSnapshot(activeGamesRef, (snapshot) => {
-      const games = snapshot.docs.map(doc => doc.data());
+      const games = snapshot.docs.map((doc) => doc.data());
       setActiveGames(games);
     });
   };
 
   // Fetch leaderboard for the selected location
   const fetchLeaderboard = (location) => {
-    const leaderboardRef = collection(FIREBASE_STORE, `locations/${location}/leaderboard`);
+    const leaderboardRef = collection(
+      FIREBASE_STORE,
+      `locations/${location}/leaderboard`,
+    );
     onSnapshot(leaderboardRef, (snapshot) => {
-      const leaderboardData = snapshot.docs.map(doc => doc.data());
+      const leaderboardData = snapshot.docs.map((doc) => doc.data());
       setLeaderboard(leaderboardData);
     });
   };
@@ -65,8 +71,8 @@ export default function LiveSessions() {
   // Handle when a location box is clicked
   const handleLocationClick = (location) => {
     setSelectedLocation(location); // Set the selected location
-    fetchActiveGames(location);    // Fetch active games for that location
-    fetchLeaderboard(location);    // Fetch leaderboard for that location
+    fetchActiveGames(location); // Fetch active games for that location
+    fetchLeaderboard(location); // Fetch leaderboard for that location
   };
 
   // Reset the view to show locations instead of games/leaderboard
@@ -99,7 +105,9 @@ export default function LiveSessions() {
           {leaderboard.length > 0 ? (
             <ul>
               {leaderboard.map((player, index) => (
-                <li key={index}>{player.name}: {player.score} points</li>
+                <li key={index}>
+                  {player.name}: {player.score} points
+                </li>
               ))}
             </ul>
           ) : (
@@ -109,9 +117,16 @@ export default function LiveSessions() {
       ) : (
         <div className="live-sessions-container">
           {/* Unverified Orlando Paintball */}
-          <div className="location-box" onClick={() => handleLocationClick('Orlando Paintball')}>
+          <div
+            className="location-box"
+            onClick={() => handleLocationClick("Orlando Paintball")}
+          >
             <div className="logo-container">
-              <img src={OrlandoPB} alt="Orlando Paintball Logo" className="logopb" />
+              <img
+                src={OrlandoPB}
+                alt="Orlando Paintball Logo"
+                className="logopb"
+              />
             </div>
             <div className="location-info">
               <h2>Orlando Paintball</h2>

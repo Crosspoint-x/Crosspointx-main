@@ -1,10 +1,25 @@
 import React, { useEffect, useState } from "react";
-import { Popper, Paper, IconButton, Typography, Grid, Avatar, Box, Divider, CircularProgress } from "@mui/material";
+import {
+  Popper,
+  Paper,
+  IconButton,
+  Typography,
+  Grid,
+  Avatar,
+  Box,
+  Divider,
+  CircularProgress,
+} from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import QRCode from "react-qr-code";
 import { FIREBASE_STORAGE, FIREBASE_STORE } from "../firebase"; // Make sure to import firebase services
-import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import {
+  getStorage,
+  ref,
+  uploadBytesResumable,
+  getDownloadURL,
+} from "firebase/storage";
 import { doc, updateDoc, getDoc } from "firebase/firestore";
 
 function UserFlyout({ anchorEl, open, onClose, user, onUpdatePfp }) {
@@ -44,7 +59,10 @@ function UserFlyout({ anchorEl, open, onClose, user, onUpdatePfp }) {
     if (file) {
       try {
         // 1. Upload to Firebase Storage
-        const storageRef = ref(FIREBASE_STORAGE         , `avatars/${user.id}/${file.name}`);
+        const storageRef = ref(
+          FIREBASE_STORAGE,
+          `avatars/${user.id}/${file.name}`,
+        );
         const uploadTask = uploadBytesResumable(storageRef, file);
 
         // 2. Track upload progress (optional)
@@ -68,7 +86,7 @@ function UserFlyout({ anchorEl, open, onClose, user, onUpdatePfp }) {
 
             // 5. Update local state and notify parent
             onUpdatePfp(downloadURL);
-          }
+          },
         );
       } catch (err) {
         console.error("Failed to upload avatar:", err);
@@ -77,7 +95,12 @@ function UserFlyout({ anchorEl, open, onClose, user, onUpdatePfp }) {
   };
 
   return (
-    <Popper open={open} anchorEl={anchorEl} placement="bottom-end" style={{ zIndex: 1300 }}>
+    <Popper
+      open={open}
+      anchorEl={anchorEl}
+      placement="bottom-end"
+      style={{ zIndex: 1300 }}
+    >
       <Paper
         elevation={4}
         sx={{
@@ -145,7 +168,11 @@ function UserFlyout({ anchorEl, open, onClose, user, onUpdatePfp }) {
         <Typography variant="h6" sx={{ fontWeight: "bold", marginBottom: 1 }}>
           {user?.name || "Player"}
         </Typography>
-        <Typography variant="body2" color="textSecondary" sx={{ marginBottom: 2 }}>
+        <Typography
+          variant="body2"
+          color="textSecondary"
+          sx={{ marginBottom: 2 }}
+        >
           Player ID: {user?.id || "A-56"}
         </Typography>
 
@@ -182,26 +209,31 @@ function UserFlyout({ anchorEl, open, onClose, user, onUpdatePfp }) {
               borderRadius: 2,
             }}
           >
-            <Typography variant="body1" sx={{ fontWeight: "bold", marginBottom: 1 }}>
+            <Typography
+              variant="body1"
+              sx={{ fontWeight: "bold", marginBottom: 1 }}
+            >
               Personal Stats
             </Typography>
             <Grid container spacing={1}>
-              {playerStats && Object.entries(playerStats).map(([key, value]) => (
-                <Grid container item xs={12} key={key}>
-                  <Grid item xs={6}>
-                    <Typography variant="body2" color="textSecondary">
-                      {key
-                        .replace(/([A-Z])/g, " $1")
-                        .replace(/^./, (str) => str.toUpperCase())}:
-                    </Typography>
+              {playerStats &&
+                Object.entries(playerStats).map(([key, value]) => (
+                  <Grid container item xs={12} key={key}>
+                    <Grid item xs={6}>
+                      <Typography variant="body2" color="textSecondary">
+                        {key
+                          .replace(/([A-Z])/g, " $1")
+                          .replace(/^./, (str) => str.toUpperCase())}
+                        :
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Typography variant="body2" align="right">
+                        {value}
+                      </Typography>
+                    </Grid>
                   </Grid>
-                  <Grid item xs={6}>
-                    <Typography variant="body2" align="right">
-                      {value}
-                    </Typography>
-                  </Grid>
-                </Grid>
-              ))}
+                ))}
             </Grid>
           </Box>
         )}

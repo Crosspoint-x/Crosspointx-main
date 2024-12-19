@@ -1,16 +1,32 @@
-import React, { useState } from 'react';
-import { createUserWithEmailAndPassword, signInAnonymously, linkWithCredential, EmailAuthProvider } from 'firebase/auth';
-import { FIREBASE_AUTH, FIREBASE_APP, FIREBASE_STORE, FIREBASE_STORAGE } from '../firebase';
-import { collection, doc, setDoc, addDoc, onSnapshot } from 'firebase/firestore';
-import { getStripePayments } from '@invertase/firestore-stripe-payments';
-import { loadStripe } from '@stripe/stripe-js';
-import { useNavigate } from 'react-router-dom';
-import { ref, uploadString, getDownloadURL } from 'firebase/storage';
-import { QRCodeCanvas } from 'qrcode.react';
+import React, { useState } from "react";
+import {
+  createUserWithEmailAndPassword,
+  signInAnonymously,
+  linkWithCredential,
+  EmailAuthProvider,
+} from "firebase/auth";
+import {
+  FIREBASE_AUTH,
+  FIREBASE_APP,
+  FIREBASE_STORE,
+  FIREBASE_STORAGE,
+} from "../firebase";
+import {
+  collection,
+  doc,
+  setDoc,
+  addDoc,
+  onSnapshot,
+} from "firebase/firestore";
+import { getStripePayments } from "@invertase/firestore-stripe-payments";
+import { loadStripe } from "@stripe/stripe-js";
+import { useNavigate } from "react-router-dom";
+import { ref, uploadString, getDownloadURL } from "firebase/storage";
+import { QRCodeCanvas } from "qrcode.react";
 import IconButton from "@mui/material/IconButton";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import CrosspointxLogo from '../assets/Crosspointx.svg';
-import './SignUp.css';
+import CrosspointxLogo from "../assets/Crosspointx.svg";
+import "./SignUp.css";
 
 function userCode(uid) {
   const codeLetter = String.fromCharCode((uid.charCodeAt(0) % 26) + 65);
@@ -22,9 +38,12 @@ function userCode(uid) {
 }
 
 // Configuration Constants
-const refID = '8155180126';
-const refPass = '786592';
-const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLIC_KEY || 'pk_test_51Ow7goA466XWtdBiQakYrdadPmlpib7w6yeXTIxqo7enudMMl2Y5uEdGRGlmTOsChS5Jl0M1nkTiuCEbUZ8CgfTL00Y1tOYYMu');
+const refID = "8155180126";
+const refPass = "786592";
+const stripePromise = loadStripe(
+  process.env.REACT_APP_STRIPE_PUBLIC_KEY ||
+    "pk_test_51Ow7goA466XWtdBiQakYrdadPmlpib7w6yeXTIxqo7enudMMl2Y5uEdGRGlmTOsChS5Jl0M1nkTiuCEbUZ8CgfTL00Y1tOYYMu",
+);
 const payments = getStripePayments(FIREBASE_APP, {
   firestore: FIREBASE_STORE,
   productsCollection: "products",
@@ -45,8 +64,8 @@ const generateQRCode = async (userId, userEmail) => {
 
 // Main Signup Component
 const SignUp = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [redirecting, setRedirecting] = useState(false);
@@ -62,7 +81,12 @@ const SignUp = () => {
       const anonUser = await signInAnonymously(FIREBASE_AUTH);
 
       // Create Stripe checkout session
-      const checkoutSessionsRef = collection(FIREBASE_STORE, "customers", anonUser.user.uid, "checkout_sessions");
+      const checkoutSessionsRef = collection(
+        FIREBASE_STORE,
+        "customers",
+        anonUser.user.uid,
+        "checkout_sessions",
+      );
       const docRef = await addDoc(checkoutSessionsRef, {
         price: "price_1P7xXnA466XWtdBiNuU68sxI", // Replace with your Stripe price ID
         success_url: `${window.location.origin}/payments/success`,
@@ -79,32 +103,39 @@ const SignUp = () => {
           window.location.assign(url); // Redirect to payment URL
         }
 
-        if (payment_status === 'paid') {
+        if (payment_status === "paid") {
           // Link email/password to anonymous user
           const credential = EmailAuthProvider.credential(email, password);
           await linkWithCredential(anonUser.user, credential);
 
           // Store user data in Firestore
-          await setDoc(doc(FIREBASE_STORE, 'users', anonUser.user.uid), {
+          await setDoc(doc(FIREBASE_STORE, "users", anonUser.user.uid), {
             email,
             createdAt: new Date(),
           });
 
           // Generate and store QR code
           const qrCodeDataURL = await generateQRCode(anonUser.user.uid, email);
-          const storageRef = ref(FIREBASE_STORAGE, `qrCodes/${anonUser.user.uid}.svg`);
-          await uploadString(storageRef, qrCodeDataURL, 'data_url');
+          const storageRef = ref(
+            FIREBASE_STORAGE,
+            `qrCodes/${anonUser.user.uid}.svg`,
+          );
+          await uploadString(storageRef, qrCodeDataURL, "data_url");
           const downloadURL = await getDownloadURL(storageRef);
 
           // Update Firestore with QR code URL
-          await setDoc(doc(FIREBASE_STORE, 'users', anonUser.user.uid), { qrCodeURL: downloadURL }, { merge: true });
+          await setDoc(
+            doc(FIREBASE_STORE, "users", anonUser.user.uid),
+            { qrCodeURL: downloadURL },
+            { merge: true },
+          );
 
           // Navigate to QR code page
-          navigate('/qrcode');
+          navigate("/qrcode");
         }
       });
     } catch (err) {
-      setError(err.message || 'Error during signup or payment.');
+      setError(err.message || "Error during signup or payment.");
     } finally {
       setLoading(false);
     }
@@ -149,18 +180,22 @@ const SignUp = () => {
         <div className="cost-breakdown">
           <p>Subscription Cost: ${subscriptionCost.toFixed(2)}</p>
           <p>Tax: ${(subscriptionCost * taxRate).toFixed(2)}</p>
-          <p><strong>Total: ${totalCost}</strong></p>
+          <p>
+            <strong>Total: ${totalCost}</strong>
+          </p>
         </div>
 
         {/* Error Display */}
         {error && <div className="error-message">{error}</div>}
 
         {/* Redirect Message */}
-        {redirecting && <div className="loading-message">Redirecting to payment...</div>}
+        {redirecting && (
+          <div className="loading-message">Redirecting to payment...</div>
+        )}
 
         {/* Submit Button */}
         <button type="submit" disabled={loading || redirecting}>
-          {loading ? 'Processing...' : 'Sign Up & Pay'}
+          {loading ? "Processing..." : "Sign Up & Pay"}
         </button>
       </form>
     </div>
