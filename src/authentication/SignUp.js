@@ -20,7 +20,7 @@ import {
 } from "@firebase/firestore";
 import { getStripePayments } from "@invertase/firestore-stripe-payments";
 import { loadStripe } from "@stripe/stripe-js";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { ref, uploadString, getDownloadURL } from "@firebase/storage";
 import { QRCodeCanvas } from "qrcode.react";
 import IconButton from "@mui/material/IconButton";

@@ -7,7 +7,7 @@ import {
   Routes,
   Navigate,
   useNavigate,
-} from "react-router-dom";
+} from "react-router";
 import { onAuthStateChanged } from "@firebase/auth";
 import {
   BottomNavigation,
