@@ -7,8 +7,8 @@ import {
   Routes,
   Navigate,
   useNavigate,
-} from "react-router-dom";
-import { onAuthStateChanged } from "firebase/auth";
+} from "react-router";
+import { onAuthStateChanged } from "@firebase/auth";
 import {
   BottomNavigation,
   BottomNavigationAction,
@@ -31,7 +31,7 @@ import Leaderboard from "./leaderboard/Leaderboard";
 import "./App.css";
 import LiveSessions from "./leaderboard/LiveSessions";
 import MatchEntry from "./referee/MatchEntry";
-import { getDoc, doc } from "firebase/firestore";
+import { getDoc, doc } from "@firebase/firestore";
 import UserFlyout from "./main/UserFlyout";
 import { FIREBASE_STORE, FIREBASE_AUTH } from "./firebase";
 

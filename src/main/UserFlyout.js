@@ -13,14 +13,14 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import QRCode from "react-qr-code";
-import { FIREBASE_STORAGE, FIREBASE_STORE } from "../firebase"; // Make sure to import firebase services
+import { FIREBASE_APP, FIREBASE_STORE, FIREBASE_STORAGE } from "../firebase"; // Make sure to import firebase services
 import {
   getStorage,
   ref,
   uploadBytesResumable,
   getDownloadURL,
-} from "firebase/storage";
-import { doc, updateDoc, getDoc } from "firebase/firestore";
+} from "@firebase/storage";
+import { doc, updateDoc, getDoc } from "@firebase/firestore";
 
 function UserFlyout({ anchorEl, open, onClose, user, onUpdatePfp }) {
   const [playerStats, setPlayerStats] = useState(null);

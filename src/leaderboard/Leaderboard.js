@@ -6,7 +6,7 @@ import {
   getDoc,
   collection,
   onSnapshot,
-} from "firebase/firestore";
+} from "@firebase/firestore";
 import { FIREBASE_STORE } from "../firebase";
 import "./Leaderboard.css";
 

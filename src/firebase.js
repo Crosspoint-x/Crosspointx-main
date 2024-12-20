@@ -1,12 +1,9 @@
 // Import needed SDK functions
-import { initializeApp } from "firebase/app";
-import { getAnalytics, isSupported } from "firebase/analytics";
-import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
-import { getDatabase } from "firebase/database";
-
-// Removed unused functions like `ref`, `push`, etc., unless they are used elsewhere in your code
-// If you plan to use them later, you can add them back
+import { initializeApp } from "@firebase/app";
+import { getAnalytics } from "@firebase/analytics";
+import { getAuth } from "@firebase/auth";
+import { getFirestore } from "@firebase/firestore";
+import { getDatabase } from "@firebase/database";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDbHv2fJ4sIvH_MOFrsh57_JtAEwRVXVxM",
@@ -20,21 +17,16 @@ const firebaseConfig = {
 };
 
 const FIREBASE_APP = initializeApp(firebaseConfig);
-const FIREBASE_AUTH = getAuth(FIREBASE_APP);
-const FIREBASE_STORE = getFirestore(FIREBASE_APP);
-const FIREBASE_STORAGE = getDatabase(FIREBASE_APP);
 
-let FIREBASE_ANALYTICS;
-isSupported().then((supported) => {
-  if (supported) {
-    FIREBASE_ANALYTICS = getAnalytics(FIREBASE_APP);
-  }
-});
+const FIREBASE_ANALYTICS = getAnalytics(FIREBASE_APP);
+const FIREBASE_AUTH = getAuth(FIREBASE_APP);
+const FIREBASE_STORAGE = getDatabase(FIREBASE_APP);
+const FIREBASE_STORE = getFirestore(FIREBASE_APP);
 
 export {
+  FIREBASE_ANALYTICS,
   FIREBASE_APP,
   FIREBASE_AUTH,
-  FIREBASE_STORE,
   FIREBASE_STORAGE,
-  FIREBASE_ANALYTICS,
+  FIREBASE_STORE,
 };

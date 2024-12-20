@@ -4,7 +4,7 @@ import {
   signInAnonymously,
   linkWithCredential,
   EmailAuthProvider,
-} from "firebase/auth";
+} from "@firebase/auth";
 import {
   FIREBASE_AUTH,
   FIREBASE_APP,
@@ -17,11 +17,11 @@ import {
   setDoc,
   addDoc,
   onSnapshot,
-} from "firebase/firestore";
+} from "@firebase/firestore";
 import { getStripePayments } from "@invertase/firestore-stripe-payments";
 import { loadStripe } from "@stripe/stripe-js";
-import { useNavigate } from "react-router-dom";
-import { ref, uploadString, getDownloadURL } from "firebase/storage";
+import { useNavigate } from "react-router";
+import { ref, uploadString, getDownloadURL } from "@firebase/storage";
 import { QRCodeCanvas } from "qrcode.react";
 import IconButton from "@mui/material/IconButton";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";

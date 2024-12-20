@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { FIREBASE_STORE } from "../firebase"; // Firestore configuration import
-import { doc, collection, getDoc, onSnapshot } from "firebase/firestore"; // Firestore imports
+import { doc, collection, getDoc, onSnapshot } from "@firebase/firestore"; // Firestore imports
 import "./LiveSessions.css"; // CSS file
 import OrlandoPB from "../assets/orlandopb.png";
 

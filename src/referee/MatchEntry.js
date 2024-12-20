@@ -7,7 +7,7 @@ import {
   updateDoc,
   collection,
   deleteDoc,
-} from "firebase/firestore";
+} from "@firebase/firestore";
 import { FIREBASE_STORE } from "../firebase";
 import { updateLeaderboardWithMatchResult } from "../leaderboard/Leaderboard";
 import "./MatchEntry.css";
