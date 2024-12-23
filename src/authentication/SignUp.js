@@ -1,14 +1,15 @@
 import React, { useState } from "react";
 import {
-  createUserWithEmailAndPassword,
-  signInAnonymously,
+  signInWithEmailAndPassword,
   linkWithCredential,
   EmailAuthProvider,
 } from "@firebase/auth";
+import { httpsCallable } from "@firebase/functions";
 import {
   FIREBASE_AUTH,
   FIREBASE_APP,
   FIREBASE_STORE,
+  FIREBASE_FUNCTIONS,
   FIREBASE_STORAGE,
 } from "../firebase";
 import {
@@ -77,63 +78,11 @@ const SignUp = () => {
     setError(null);
 
     try {
-      // Create anonymous user
-      const anonUser = await signInAnonymously(FIREBASE_AUTH);
+      const signUp = httpsCallable(FIREBASE_FUNCTIONS, "userSignUp");
+      await signUp({ email: email, password: password });
+      await signInWithEmailAndPassword(FIREBASE_AUTH, email, password);
 
-      // Create Stripe checkout session
-      const checkoutSessionsRef = collection(
-        FIREBASE_STORE,
-        "customers",
-        anonUser.user.uid,
-        "checkout_sessions",
-      );
-      const docRef = await addDoc(checkoutSessionsRef, {
-        price: "price_1P7xXnA466XWtdBiNuU68sxI", // Replace with your Stripe price ID
-        success_url: `${window.location.origin}/payments/success`,
-        cancel_url: `${window.location.origin}/payments/cancel`,
-      });
-
-      // Listen for session updates
-      const unsubscribe = onSnapshot(docRef, async (snap) => {
-        const { error, url, payment_status } = snap.data();
-        if (error) throw new Error(`Payment Error: ${error.message}`);
-
-        if (url) {
-          setRedirecting(true);
-          window.location.assign(url); // Redirect to payment URL
-        }
-
-        if (payment_status === "paid") {
-          // Link email/password to anonymous user
-          const credential = EmailAuthProvider.credential(email, password);
-          await linkWithCredential(anonUser.user, credential);
-
-          // Store user data in Firestore
-          await setDoc(doc(FIREBASE_STORE, "users", anonUser.user.uid), {
-            email,
-            createdAt: new Date(),
-          });
-
-          // Generate and store QR code
-          const qrCodeDataURL = await generateQRCode(anonUser.user.uid, email);
-          const storageRef = ref(
-            FIREBASE_STORAGE,
-            `qrCodes/${anonUser.user.uid}.svg`,
-          );
-          await uploadString(storageRef, qrCodeDataURL, "data_url");
-          const downloadURL = await getDownloadURL(storageRef);
-
-          // Update Firestore with QR code URL
-          await setDoc(
-            doc(FIREBASE_STORE, "users", anonUser.user.uid),
-            { qrCodeURL: downloadURL },
-            { merge: true },
-          );
-
-          // Navigate to QR code page
-          navigate("/qrcode");
-        }
-      });
+      navigate("/Leaderboard");
     } catch (err) {
       setError(err.message || "Error during signup or payment.");
     } finally {
