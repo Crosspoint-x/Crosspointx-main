@@ -34,6 +34,7 @@ import MatchEntry from "./referee/MatchEntry";
 import { getDoc, doc } from "@firebase/firestore";
 import UserFlyout from "./main/UserFlyout";
 import { FIREBASE_STORE, FIREBASE_AUTH } from "./firebase";
+import { getPlayerID } from "./common";
 
 const stripePromise = loadStripe(
   "pk_test_51Ow7goA466XWtdBiQakYrdadPmlpib7w6yeXTIxqo7enudMMl2Y5uEdGRGlmTOsChS5Jl0M1nkTiuCEbUZ8CgfTL00Y1tOYYMu",
@@ -135,21 +136,13 @@ export default function App() {
   );
 }
 
-function userCode(uid) {
-  const codeLetter = String.fromCharCode((uid.charCodeAt(0) % 26) + 65);
-  const codeNumOne = uid.charCodeAt(1) % 10;
-  const codeNumTwo = uid.charCodeAt(2) % 10;
-  const codeNumThree = uid.charCodeAt(3) % 10;
-
-  return `${codeLetter}${codeNumOne}${codeNumTwo}${codeNumThree}`;
-}
-
 // InsideLayout component
 function InsideLayout({ user }) {
   const [value, setValue] = useState("/LiveSessions");
   const [flyoutOpen, setFlyoutOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const [profilePic, setProfilePic] = useState(null);
+  const [playerID, setPlayerID] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -169,6 +162,17 @@ function InsideLayout({ user }) {
       }
     };
 
+    const getPID = async () => {
+      if (user) {
+        try {
+          setPlayerID(await getPlayerID(user.uid));
+        } catch (error) {
+          console.error("Error fetching player id", error);
+        }
+      }
+    };
+
+    getPID();
     fetchUserProfile();
   }, [user]);
 
@@ -218,7 +222,7 @@ function InsideLayout({ user }) {
           open={flyoutOpen}
           onClose={() => setFlyoutOpen(false)}
           user={{
-            id: userCode(user.uid),
+            id: playerID,
             photoURL: profilePic,
           }}
         />
