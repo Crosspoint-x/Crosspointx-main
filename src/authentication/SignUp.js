@@ -29,15 +29,6 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import CrosspointxLogo from "../assets/Crosspointx.svg";
 import "./SignUp.css";
 
-function userCode(uid) {
-  const codeLetter = String.fromCharCode((uid.charCodeAt(0) % 26) + 65);
-  const codeNumOne = uid.charCodeAt(1) % 10;
-  const codeNumTwo = uid.charCodeAt(2) % 10;
-  const codeNumThree = uid.charCodeAt(3) % 10;
-
-  return `${codeLetter}${codeNumOne}${codeNumTwo}${codeNumThree}`;
-}
-
 // Configuration Constants
 const refID = "8155180126";
 const refPass = "786592";
