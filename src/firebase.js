@@ -1,5 +1,9 @@
 // Import needed SDK functions
 import { initializeApp } from "@firebase/app";
+import {
+  initializeAppCheck,
+  ReCaptchaEnterpriseProvider,
+} from "@firebase/app-check";
 import { getAnalytics } from "@firebase/analytics";
 import { getAuth } from "@firebase/auth";
 import { getFirestore } from "@firebase/firestore";
@@ -18,6 +22,13 @@ const firebaseConfig = {
 };
 
 const FIREBASE_APP = initializeApp(firebaseConfig);
+
+const FIREBASE_APPCHECK = initializeAppCheck(FIREBASE_APP, {
+  provider: new ReCaptchaEnterpriseProvider(
+    "6LdXfqQqAAAAAMtIViiwXxFuShhLXM947XVWnO5l",
+  ),
+  isTokenAutoRefreshEnable: true,
+});
 
 const FIREBASE_ANALYTICS = getAnalytics(FIREBASE_APP);
 const FIREBASE_AUTH = getAuth(FIREBASE_APP);
