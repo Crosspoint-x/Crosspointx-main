@@ -13,7 +13,6 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import QRCode from "react-qr-code";
-import { FIREBASE_APP, FIREBASE_STORE, FIREBASE_STORAGE } from "../firebase"; // Make sure to import firebase services
 import {
   getStorage,
   ref,
@@ -23,28 +22,33 @@ import {
 import { doc, updateDoc, getDoc } from "@firebase/firestore";
 
 function UserFlyout({ anchorEl, open, onClose, user, onUpdatePfp }) {
-  const [playerStats, setPlayerStats] = useState(null);
+  const [userStats, setUserStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [hovered, setHovered] = useState(false);
 
-  // Fetch player stats from Firestore
+  // Fetch user stats from Firestore
   useEffect(() => {
     if (user?.id) {
-      const fetchPlayerStats = async () => {
+      const fetchUserStats = async () => {
         setLoading(true);
         try {
-          const playerRef = doc(FIREBASE_STORE, "players", user.id); // Adjust the collection and document path as needed
-          const playerSnap = await getDoc(playerRef);
-          setPlayerStats(playerSnap.data());
+          // Adjust the collection path to point to 'users' instead of 'players'
+          const userRef = doc(FIREBASE_STORE, "users", user.id);
+          const userSnap = await getDoc(userRef);
+          if (userSnap.exists()) {
+            setUserStats(userSnap.data());
+          } else {
+            setError("User data not found.");
+          }
         } catch (err) {
-          setError("Failed to load player stats.");
+          setError("Failed to load user stats.");
         } finally {
           setLoading(false);
         }
       };
 
-      fetchPlayerStats();
+      fetchUserStats();
     }
   }, [user?.id]);
 
@@ -58,35 +62,30 @@ function UserFlyout({ anchorEl, open, onClose, user, onUpdatePfp }) {
     const file = event.target.files[0];
     if (file) {
       try {
-        // 1. Upload to Firebase Storage
+        // Upload avatar to Firebase Storage
         const storageRef = ref(
           FIREBASE_STORAGE,
-          `avatars/${user.id}/${file.name}`,
+          `avatars/${user.id}/${file.name}`
         );
         const uploadTask = uploadBytesResumable(storageRef, file);
 
-        // 2. Track upload progress (optional)
+        // Get the download URL after upload completes
         uploadTask.on(
           "state_changed",
-          (snapshot) => {
-            // Monitor the progress (if needed)
-          },
-          (err) => {
-            console.error("Upload failed", err);
-          },
+          null,
+          (err) => console.error("Upload failed", err),
           async () => {
-            // 3. Get the download URL after upload completes
             const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
 
-            // 4. Update Firestore with the new photo URL
-            const userRef = doc(FIREBASE_STORE, "users", user.id); // Adjust collection name as needed
+            // Update Firestore with the new photo URL
+            const userRef = doc(FIREBASE_STORE, "users", user.id);
             await updateDoc(userRef, {
               photoURL: downloadURL,
             });
 
-            // 5. Update local state and notify parent
+            // Notify parent component about the update
             onUpdatePfp(downloadURL);
-          },
+          }
         );
       } catch (err) {
         console.error("Failed to upload avatar:", err);
@@ -112,7 +111,6 @@ function UserFlyout({ anchorEl, open, onClose, user, onUpdatePfp }) {
           alignItems: "center",
         }}
       >
-        {/* Close Button */}
         <IconButton
           sx={{ alignSelf: "flex-end", marginBottom: 1 }}
           onClick={onClose}
@@ -121,7 +119,6 @@ function UserFlyout({ anchorEl, open, onClose, user, onUpdatePfp }) {
           <CloseIcon />
         </IconButton>
 
-        {/* Profile Section */}
         <Box
           sx={{
             position: "relative",
@@ -135,7 +132,7 @@ function UserFlyout({ anchorEl, open, onClose, user, onUpdatePfp }) {
           onClick={handleAvatarClick}
         >
           <Avatar
-            alt={user?.name || "Player"}
+            alt={user?.name || "User"}
             src={user?.photoURL || "https://via.placeholder.com/150"}
             sx={{ width: 80, height: 80 }}
           />
@@ -166,14 +163,14 @@ function UserFlyout({ anchorEl, open, onClose, user, onUpdatePfp }) {
           />
         </Box>
         <Typography variant="h6" sx={{ fontWeight: "bold", marginBottom: 1 }}>
-          {user?.name || "Player"}
+          {user?.name || "User"}
         </Typography>
         <Typography
           variant="body2"
           color="textSecondary"
           sx={{ marginBottom: 2 }}
         >
-          Player ID: {user?.id || "A-56"}
+          User ID: {user?.id || "U-123"}
         </Typography>
 
         <Divider sx={{ width: "100%", marginY: 2 }} />
@@ -190,7 +187,7 @@ function UserFlyout({ anchorEl, open, onClose, user, onUpdatePfp }) {
             marginBottom: 2,
           }}
         >
-          <QRCode value={user?.id || "A-56"} size={80} />
+          <QRCode value={user?.id || "U-123"} size={80} />
         </Box>
 
         {/* Stats Section */}
@@ -216,8 +213,8 @@ function UserFlyout({ anchorEl, open, onClose, user, onUpdatePfp }) {
               Personal Stats
             </Typography>
             <Grid container spacing={1}>
-              {playerStats &&
-                Object.entries(playerStats).map(([key, value]) => (
+              {userStats &&
+                Object.entries(userStats).map(([key, value]) => (
                   <Grid container item xs={12} key={key}>
                     <Grid item xs={6}>
                       <Typography variant="body2" color="textSecondary">
