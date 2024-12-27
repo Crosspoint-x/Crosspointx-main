@@ -28,13 +28,15 @@ const calculateElo = (winnerElo, loserElo) => {
 
 // Function to update Firestore with match result and Elo calculations
 export const updateLeaderboardWithMatchResult = async (
-  playerId,
+  playerID,
   opponentId,
-  isWinner,
+  isWinner
 ) => {
   try {
-    const playerRef = doc(FIREBASE_STORE, "leaderboard", playerId);
+    const playerRef = doc(FIREBASE_STORE, "leaderboard", playerID);
     const opponentRef = doc(FIREBASE_STORE, "leaderboard", opponentId);
+    const playerUserRef = doc(FIREBASE_STORE, "users", playerID); // User doc for player
+    const opponentUserRef = doc(FIREBASE_STORE, "users", opponentId); // User doc for opponent
 
     // Fetch current Elo ratings for both players
     const playerSnap = await getDoc(playerRef);
@@ -43,16 +45,18 @@ export const updateLeaderboardWithMatchResult = async (
     // If the player or opponent doesn't exist in leaderboard, add them with default values
     if (!playerSnap.exists()) {
       console.log(
-        `Player ${playerId} not found in leaderboard, adding with default values.`,
+        `Player ${playerID} not found in leaderboard, adding with default values.`
       );
       await setDoc(playerRef, { wins: 0, losses: 0, elo: 1000 });
+      await setDoc(playerUserRef, { wins: 0, losses: 0, elo: 1000 }); // Sync to users collection
     }
 
     if (!opponentSnap.exists()) {
       console.log(
-        `Opponent ${opponentId} not found in leaderboard, adding with default values.`,
+        `Opponent ${opponentId} not found in leaderboard, adding with default values.`
       );
       await setDoc(opponentRef, { wins: 0, losses: 0, elo: 1000 });
+      await setDoc(opponentUserRef, { wins: 0, losses: 0, elo: 1000 }); // Sync to users collection
     }
 
     // Fetch the updated player and opponent data
@@ -68,34 +72,51 @@ export const updateLeaderboardWithMatchResult = async (
     // Calculate new Elo ratings
     const { newWinnerElo, newLoserElo } = calculateElo(playerElo, opponentElo);
 
-    // If this player is a winner, update their win count and Elo
+    // Update leaderboard and users collection
     if (isWinner) {
+      // Update player (winner)
       await updateDoc(playerRef, {
         wins: (playerData.wins || 0) + 1,
         elo: newWinnerElo,
       });
+      await updateDoc(playerUserRef, {
+        wins: (playerData.wins || 0) + 1,
+        elo: newWinnerElo,
+      });
 
-      // Update the opponent (loser) with their new loss count and Elo
+      // Update opponent (loser)
       await updateDoc(opponentRef, {
         losses: (opponentData.losses || 0) + 1,
         elo: newLoserElo,
       });
+      await updateDoc(opponentUserRef, {
+        losses: (opponentData.losses || 0) + 1,
+        elo: newLoserElo,
+      });
     } else {
-      // If this player is a loser, update their loss count and Elo
+      // Update player (loser)
       await updateDoc(playerRef, {
         losses: (playerData.losses || 0) + 1,
         elo: newLoserElo,
       });
+      await updateDoc(playerUserRef, {
+        losses: (playerData.losses || 0) + 1,
+        elo: newLoserElo,
+      });
 
-      // Update the opponent (winner) with their new win count and Elo
+      // Update opponent (winner)
       await updateDoc(opponentRef, {
+        wins: (opponentData.wins || 0) + 1,
+        elo: newWinnerElo,
+      });
+      await updateDoc(opponentUserRef, {
         wins: (opponentData.wins || 0) + 1,
         elo: newWinnerElo,
       });
     }
 
     console.log(
-      `Elo ratings updated! Player: ${newWinnerElo}, Opponent: ${newLoserElo}`,
+      `Elo ratings updated! Player: ${newWinnerElo}, Opponent: ${newLoserElo}`
     );
   } catch (error) {
     console.error("Error updating leaderboard:", error);
@@ -127,9 +148,9 @@ const Leaderboard = () => {
     const activePlayersUnsub = onSnapshot(
       collection(FIREBASE_STORE, "locations/OrlandoPaintball/activePlayers"),
       (snapshot) => {
-        const activePlayerIds = snapshot.docs.map((doc) => doc.id);
+        const activePlayerIDS = snapshot.docs.map((doc) => doc.id);
         setActiveScores(
-          scores.filter((score) => activePlayerIds.includes(score.id)),
+          scores.filter((score) => activePlayerIDS.includes(score.id)),
         );
       },
     );
