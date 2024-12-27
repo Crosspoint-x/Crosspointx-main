@@ -9,6 +9,7 @@ import { getAuth } from "@firebase/auth";
 import { getFirestore } from "@firebase/firestore";
 import { getDatabase } from "@firebase/database";
 import { getFunctions } from "@firebase/functions";
+import { getStorage } from "@firebase/storage";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDbHv2fJ4sIvH_MOFrsh57_JtAEwRVXVxM",
@@ -33,7 +34,8 @@ const FIREBASE_APPCHECK = initializeAppCheck(FIREBASE_APP, {
 const FIREBASE_ANALYTICS = getAnalytics(FIREBASE_APP);
 const FIREBASE_AUTH = getAuth(FIREBASE_APP);
 const FIREBASE_FUNCTIONS = getFunctions(FIREBASE_APP);
-const FIREBASE_STORAGE = getDatabase(FIREBASE_APP);
+const FIREBASE_DATABASE = getDatabase(FIREBASE_APP);
+const FIREBASE_STORAGE = getStorage(FIREBASE_APP);
 const FIREBASE_STORE = getFirestore(FIREBASE_APP);
 
 export {
@@ -41,6 +43,7 @@ export {
   FIREBASE_APP,
   FIREBASE_AUTH,
   FIREBASE_FUNCTIONS,
+  FIREBASE_DATABASE,
   FIREBASE_STORAGE,
   FIREBASE_STORE,
 };
