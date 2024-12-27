@@ -66,7 +66,7 @@ function UserFlyout({ anchorEl, open, onClose, user, onUpdatePfp }) {
       try {
         // Upload avatar to Firebase Storage
         const storageRef = ref(
-          FIREBASE_STORE,
+          FIREBASE_STORAGE,
           `avatars/${user.id}/${file.name}`
         );
         const uploadTask = uploadBytesResumable(storageRef, file);
