@@ -20,6 +20,8 @@ import {
   getDownloadURL,
 } from "@firebase/storage";
 import { doc, updateDoc, getDoc } from "@firebase/firestore";
+import { getAuth, updateProfile } from "@firebase/auth";
+import { FIREBASE_APP, FIREBASE_STORE, FIREBASE_STORAGE } from "../firebase";
 
 function UserFlyout({ anchorEl, open, onClose, user, onUpdatePfp }) {
   const [userStats, setUserStats] = useState(null);
@@ -64,7 +66,7 @@ function UserFlyout({ anchorEl, open, onClose, user, onUpdatePfp }) {
       try {
         // Upload avatar to Firebase Storage
         const storageRef = ref(
-          FIREBASE_STORAGE,
+          FIREBASE_STORE,
           `avatars/${user.id}/${file.name}`
         );
         const uploadTask = uploadBytesResumable(storageRef, file);
@@ -78,8 +80,9 @@ function UserFlyout({ anchorEl, open, onClose, user, onUpdatePfp }) {
             const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
 
             // Update Firestore with the new photo URL
+            const auth = getAuth();
             const userRef = doc(FIREBASE_STORE, "users", user.id);
-            await updateDoc(userRef, {
+            await updateProfile(auth.currentUser, {
               photoURL: downloadURL,
             });
 
@@ -132,7 +135,7 @@ function UserFlyout({ anchorEl, open, onClose, user, onUpdatePfp }) {
           onClick={handleAvatarClick}
         >
           <Avatar
-            alt={user?.name || "User"}
+            alt={user?.name || "Unknown Player"}
             src={user?.photoURL || "https://via.placeholder.com/150"}
             sx={{ width: 80, height: 80 }}
           />
@@ -170,7 +173,7 @@ function UserFlyout({ anchorEl, open, onClose, user, onUpdatePfp }) {
           color="textSecondary"
           sx={{ marginBottom: 2 }}
         >
-          User ID: {user?.id || "U-123"}
+          User ID: {user?.id}
         </Typography>
 
         <Divider sx={{ width: "100%", marginY: 2 }} />
@@ -187,7 +190,7 @@ function UserFlyout({ anchorEl, open, onClose, user, onUpdatePfp }) {
             marginBottom: 2,
           }}
         >
-          <QRCode value={user?.id || "U-123"} size={80} />
+          <QRCode value={user?.id} size={80} />
         </Box>
 
         {/* Stats Section */}
