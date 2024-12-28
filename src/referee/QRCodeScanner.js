@@ -14,19 +14,20 @@ const QRCodeScannerComponent = ({ locationId }) => {
 
   const handleScan = async (qrValue) => {
     if (!qrValue) return;
-
-    const match = qrValue.match(/User ID: (\w+)/);
+  
+    // Match only word characters (e.g., "A002")
+    const match = qrValue.match(/^\w+$/);
     if (!match) {
       setError("Invalid QR code format");
       return;
     }
-
-    const userId = match[1];
-
+  
+    const userId = match[0]; // The Player ID
+  
     try {
       const userDocRef = doc(FIREBASE_STORE, "users", userId);
       const userDoc = await getDoc(userDocRef);
-
+  
       if (userDoc.exists()) {
         const userData = userDoc.data();
         setScannedPlayer({ userId, ...userData });
@@ -34,7 +35,7 @@ const QRCodeScannerComponent = ({ locationId }) => {
           ...prevList,
           { userId, ...userData, team },
         ]);
-
+  
         const playerDocRef = doc(
           FIREBASE_STORE,
           `locations/${locationId}/activePlayers`,
