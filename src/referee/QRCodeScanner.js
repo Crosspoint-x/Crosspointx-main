@@ -15,41 +15,57 @@ const QRCodeScannerComponent = ({ locationId }) => {
   const handleScan = async (qrValue) => {
     if (!qrValue) return;
   
-    // Match only word characters (e.g., "A002")
-    const match = qrValue.match(/^\w+$/);
+    const match = qrValue.match(/^\w+$/); // Ensure it's a valid alphanumeric ID
     if (!match) {
       setError("Invalid QR code format");
       return;
     }
   
-    const userId = match[0]; // The Player ID
+    const playerID = match[0]; // Extract the scanned Player ID
+    console.log("Scanned Player ID:", playerID);
   
     try {
-      const userDocRef = doc(FIREBASE_STORE, "users", userId);
-      const userDoc = await getDoc(userDocRef);
+      // Query Firestore to find a document where playerID matches
+      const usersQuery = query(
+        collection(FIREBASE_STORE, "users"),
+        where("playerID", "==", playerID)
+      );
+      const querySnapshot = await getDocs(usersQuery);
   
-      if (userDoc.exists()) {
+      if (!querySnapshot.empty) {
+        // Get the first matching document (assuming playerID is unique)
+        const userDoc = querySnapshot.docs[0];
         const userData = userDoc.data();
-        setScannedPlayer({ userId, ...userData });
-        setPlayerList((prevList) => [
-          ...prevList,
-          { userId, ...userData, team },
-        ]);
   
-        const playerDocRef = doc(
-          FIREBASE_STORE,
-          `locations/${locationId}/activePlayers`,
-          userId,
-        );
-        await setDoc(
-          playerDocRef,
-          {
-            name: userData.name || userData.email,
-            team: team,
-            isReferee: false,
-          },
-          { merge: true },
-        );
+        console.log("Fetched User Data:", userData);
+  
+        // Check if the authenticated user's userId matches the document's ID
+        if (user?.uid === userDoc.id) {
+          // Add the scanned player to the state
+          setScannedPlayer({ userId: userDoc.id, ...userData });
+          setPlayerList((prevList) => [
+            ...prevList,
+            { userId: userDoc.id, ...userData, team },
+          ]);
+  
+          // Add the player to the activePlayers subcollection
+          const playerDocRef = doc(
+            FIREBASE_STORE,
+            `locations/${locationId}/activePlayers`,
+            playerID,
+          );
+          await setDoc(
+            playerDocRef,
+            {
+              name: userData.name || userData.email,
+              team: team,
+              isReferee: false,
+            },
+            { merge: true }
+          );
+        } else {
+          setError("Player ID does not belong to the current user.");
+        }
       } else {
         setError("User not found");
       }
